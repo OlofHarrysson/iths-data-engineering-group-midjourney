@@ -31,8 +31,7 @@ source venv/bin/activate
 
 
 ## Pull Request Practice
-🐢 Tommy the Brave Turtle 🐢
-In a peaceful pond, Tommy the Turtle lived with his friends. One day, a baby duckling named Daisy got lost in the nearby forest. Tommy, being the bravest turtle, volunteered to find her. Through thick bushes and over fallen logs, Tommy searched tirelessly. Will he be able to find Daisy and bring her back safely to the pond? Follow Tommy's courageous journey and find out!
+
 
 
 
