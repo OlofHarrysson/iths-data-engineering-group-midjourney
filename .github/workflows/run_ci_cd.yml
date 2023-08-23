@@ -1,0 +1,17 @@
+---
+name: Checkout repo with python 3.10
+
+on:
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  checkout_repo_and_install:
+    runs_on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
