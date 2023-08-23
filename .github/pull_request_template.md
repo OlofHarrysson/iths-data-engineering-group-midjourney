@@ -8,6 +8,8 @@
 ## Submitters checklist
 
 - [ ] I have performed a self-review of my code
+- [ ] I have done a git pull from the main to make there arent any conflicts
+- [ ] I have resolved any eventual conflicts stemming from the point above
 - [ ] I have checked that the naming of my variables, functions, classes are easily understable
 - [ ] I have ran a pytest on my test code and everything works as it should
 - [ ] I have added comments to code that will be otherwise be complicated for others
