@@ -24,15 +24,16 @@ async def get_articles_from_folder(folder_path):
 def format_summary_message(article, group_name):
     blog_title = article.get("title", "N/A")
     timestamp = article.get("timestamp", "N/A")
-    link = article.get("link", "N/A")
-    summary = article.get("description", "N/A")
+    # link = article.get("link", "N/A")
+    summary = article.get("blog_summary", "N/A")
     formatted_summary = summary.replace(".\n", ".\n> ")
     message_content = (
-        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"━━\n"
+        f"📌 ✅ 🎯 🏁\n\n"
         f"📁 **__Group Name:__**\n• {group_name}\n\n"
         f"📰 **__Blog Title:__**\n• {blog_title}\n\n"
         f"▶️ **__New Article Summary:__**\n\n> {formatted_summary}\n\n"
-        f"🔗 **Link** {link}\n"
+        # f"🔗 **Link** {link}\n"
     )
     return message_content
 
@@ -41,7 +42,8 @@ async def send_summary_to_discord():
     async with aiohttp.ClientSession() as session:
         webhook = Webhook.from_url(webhook_url, adapter=AsyncWebhookAdapter(session))
         current_path = Path.cwd()
-        folder_path = current_path.parent.parent / "data/data_warehouse/mit/articles"
+        # folder_path = current_path.parent / "data/data_warehouse/mit/summaries"
+        folder_path = Path(__file__).parent.parent.parent / "data/data_warehouse/mit/summaries"
         group_name = "Midjourney"
 
         articles = await get_articles_from_folder(folder_path)
