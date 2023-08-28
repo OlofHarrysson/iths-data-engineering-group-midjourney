@@ -16,6 +16,8 @@ from langchain.text_splitter import (
     CharacterTextSplitter,  # for splitting the text into chunks
 )
 
+from newsfeed import utils
+
 
 # Read blog_data from DataWearhouse into a list of articles
 def get_articles_from_folder(blog_name):
@@ -132,8 +134,15 @@ def save_blog_summaries(articles, blog_name):
             )  # Serialize BlogSummary instance to JSON and write it to the file
 
 
-# Main execution if the script is run directly
+# Check if the script is run directly
 if __name__ == "__main__":
-    blog_name = "mit"
+    # Parse command-line arguments using pare_args() from utils
+    args = (
+        utils.parse_args()
+    )  # args = Namespace(blog_name='mit') if program ran with --blog_space mit
+    # Extract the blog_name from the parsed arguments
+    blog_name = args.blog_name
+    # Retrieve a list of articles from the specified blog folder
     articles = get_articles_from_folder(blog_name)
+    # Save summaries for the retrieved articles to the Data Warehouse
     save_blog_summaries(articles, blog_name)
