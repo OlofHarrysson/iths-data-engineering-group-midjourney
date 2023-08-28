@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Dashboard</title>
+    <style>
+        body {
+            text-align: center;
+        }
+        #corner-image {
+            position: absolute;
+            top: -2%;
+            left: -2%;
+            width: 250px; /* Adjust as needed */
+        }
+        form {
+            display: inline-block;
+            margin-top: 1em;
+        }
+        h1, h2, h3 {
+            margin-bottom: 0.5em;
+        }
+        hr {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+    </style>
+</head>
+<body>
+    <img id="corner-image" src="{{ url_for('serve_image', filename='midjourney-logo.png') }}" alt="Midjourney Logo">
+    <h1>Main Title: Simple Dashboard</h1>
+    <hr>
+    <h2>Date: {{ summary.timestamp }}</h2>
+    <hr>
+    <form method="post">
+        <label for="article">Choose an article:</label>
+        <select id="article" name="article">
+            <option value="Article 1">Article 1</option>
+            <option value="Article 2">Article 2</option>
+            <!-- Add more options as needed -->
+        </select>
+        <input type="submit" value="Generate Summary">
+    </form>
+    <hr>
+    <h3>Article Summary:</h3>
+    <p>{{ summary.text }}</p>
+</body>
+</html>
