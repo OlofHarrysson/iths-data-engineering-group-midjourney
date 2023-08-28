@@ -7,8 +7,3 @@ install_dependencies:
 
 run_precommit:
 	pre-commit run --all-files
-
-run_tests:
-	# allows to run tests from the terminal using the 'make run_tests' command
-	pytest tests/
-

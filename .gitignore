@@ -5,11 +5,6 @@ data/data_warehouse/*
 !data/data_warehouse/README.md
 logs
 
-#ignore json and xml
-*.xml
-*.json
-
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
