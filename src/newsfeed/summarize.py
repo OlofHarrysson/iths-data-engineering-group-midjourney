@@ -36,10 +36,12 @@ def get_articles_from_folder(blog_name):
     articles = []
     for article in articles_list:
         with open(article) as f:
-            str_repr_of_json = f.read()  # f.read returns a string representation of the json file
-            parsed_article = BlogInfo.parse_raw(
-                str_repr_of_json
-            )  # Deserialization from raw json (str) to dict formated according to BlogInfo
+            dict_repr_of_json = json.load(
+                f
+            )  # json.load() directly loads JSON content into a dictionary
+            parsed_article = BlogInfo.parse_obj(
+                dict_repr_of_json
+            )  # Use parse_obj() for dict input (deserialization)
             articles.append(parsed_article)
     return articles
 
