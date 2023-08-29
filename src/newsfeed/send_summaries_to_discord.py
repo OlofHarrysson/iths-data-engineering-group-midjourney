@@ -35,12 +35,15 @@ def format_summary_message(summary_item, group_name):
     blog_title = summary_item.get("title", "N/A")
     summary_item = summary_item.get("blog_summary", "N/A")
     formatted_summary_item = summary_item.replace(".\n", ".\n> ")
+
     message_content = (
-        f"━━\n"
-        f" 📌📌📌📌🎯 🏁\n\n"
-        f"📁 **__Group Name:__**\n• {group_name}\n\n"
-        f"📰 **__Blog Title:__**\n• {blog_title}\n\n"
-        f"▶️ **__New Article Summary:__**\n\n> {formatted_summary_item}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🔔 **New Article Alert from {group_name}** 🔔\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"📁 **Group Name:** \n> {group_name}\n\n"
+        f"📰 **Blog Title:** \n> {blog_title}\n\n"
+        f"▶️ **New Article Summary:**\n\n> {formatted_summary_item}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     )
     return message_content
 
