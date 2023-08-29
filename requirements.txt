@@ -13,4 +13,4 @@ openai
 tiktoken
 chromadb
 langchain
-Flask
+dash
