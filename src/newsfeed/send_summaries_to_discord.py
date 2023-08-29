@@ -32,9 +32,12 @@ async def get_articles_from_folder(folder_path):
 # The function below formats each summary item that will sent to discord to have
 # the format seen below in message_content
 def format_summary_message(summary_item, group_name):
-    blog_title = summary_item.get("title", "N/A")
-    summary_item = summary_item.get("blog_summary", "N/A")
-    formatted_summary_item = summary_item.replace(".\n", ".\n> ")
+    blog_title = summary_item.get("title")
+    blog_summary = summary_item.get("blog_summary")
+
+    if blog_summary is None or blog_title is None:
+        raise ValueError("Article missing a title or blog summary")
+    formatted_summary_item = blog_summary.replace(".\n", ".\n> ")
 
     message_content = (
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
