@@ -15,8 +15,7 @@ webhook_url = "https://discord.com/api/webhooks/1143986724867940452/dkS0pJmG-qQw
 async def get_articles_from_folder(folder_path):
     # This line just checks if the path to the folder sent in as input exist and if it doesnt, an empty list is returned
     if not folder_path.exists():
-        print(f"Directory {folder_path} does not exist.")
-        return []
+        raise FileNotFoundError(f"Directory {folder_path} does not exist.")
 
     # This line iterates throght each item in the folder and adds every file that is a json
     # into the json_files

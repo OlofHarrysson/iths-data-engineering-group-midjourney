@@ -28,8 +28,7 @@ def get_articles_from_folder(blog_name):
 
     # Check if directory exists otherwise return None
     if not path_articles.exists():
-        print(f"Directory {path_articles} does not exist.")
-        return None
+        raise FileNotFoundError(f"Directory {path_articles} does not exist.")
 
     # create a list with all articles which are .json
     articles_list = [article for article in path_articles.iterdir() if article.suffix == ".json"]
