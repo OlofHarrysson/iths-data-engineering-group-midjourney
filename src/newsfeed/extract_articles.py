@@ -61,9 +61,13 @@ def save_articles(articles, blog_name):
     save_dir = Path("data/data_warehouse", blog_name, "articles")
     save_dir.mkdir(exist_ok=True, parents=True)
     for article in articles:
-        save_path = save_dir / article.get_filename()
-        with open(save_path, "w") as f:
-            f.write(article.json(indent=2))
+        try:
+            save_path = save_dir / article.get_filename()
+            with open(save_path, "w") as f:
+                f.write(article.json(indent=2))
+        except Exception as e:
+            print(f"Error saving article: {e}")
+            continue
 
 
 def main(blog_name):
