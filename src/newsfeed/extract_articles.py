@@ -25,21 +25,33 @@ def load_metadata(blog_name):
 
 def extract_articles_from_xml(parsed_xml):
     articles = []
-    for item in parsed_xml.find_all("item"):
-        raw_blog_text = item.find("content:encoded").text
+    for item in parsed_xml.find_all(["item", "entry"]):
+        raw_blog_text = item.find("content:encoded" if "item" in item.name else "content").text
         soup = BeautifulSoup(raw_blog_text, "html.parser")
         blog_text = soup.get_text()
         title = item.title.text
         unique_id = create_uuid_from_string(title)
-        article_info = BlogInfo(
-            unique_id=unique_id,
-            title=title,
-            description=item.description.text,
-            link=item.link.text,
-            blog_text=blog_text,
-            published=pd.to_datetime(item.pubDate.text).date(),
-            timestamp=datetime.now(),
-        )
+
+        if "item" in item.name:  # Handle "item" structure
+            article_info = BlogInfo(
+                unique_id=unique_id,
+                title=title,
+                description=item.description.text,
+                link=item.link.text,
+                blog_text=blog_text,
+                published=pd.to_datetime(item.pubDate.text).date(),
+                timestamp=datetime.now(),
+            )
+        else:  # Handle "entry" structure
+            article_info = BlogInfo(
+                unique_id=unique_id,
+                title=title,
+                link=item.find_all("link")[1]["href"],
+                blog_text=blog_text,
+                published=pd.to_datetime(item.published.text).date(),
+                timestamp=datetime.now(),
+            )
+
         articles.append(article_info)
 
     return articles
