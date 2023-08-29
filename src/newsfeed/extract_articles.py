@@ -32,7 +32,7 @@ def extract_articles_from_xml(parsed_xml):
         title = item.title.text
         unique_id = create_uuid_from_string(title)
 
-        if "item" in item.name:  # Handle "item" structure
+        if "item" in item.name:  # Handle "item" structure as for mit and ai_blog
             article_info = BlogInfo(
                 unique_id=unique_id,
                 title=title,
@@ -42,7 +42,7 @@ def extract_articles_from_xml(parsed_xml):
                 published=pd.to_datetime(item.pubDate.text).date(),
                 timestamp=datetime.now(),
             )
-        else:  # Handle "entry" structure
+        else:  # Handle "entry" structure as for google_ai
             article_info = BlogInfo(
                 unique_id=unique_id,
                 title=title,
@@ -61,6 +61,7 @@ def save_articles(articles, blog_name):
     save_dir = Path("data/data_warehouse", blog_name, "articles")
     save_dir.mkdir(exist_ok=True, parents=True)
     for article in articles:
+        # try/except to skip articles which raise errors
         try:
             save_path = save_dir / article.get_filename()
             with open(save_path, "w") as f:
