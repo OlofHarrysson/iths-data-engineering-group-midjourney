@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Optional
 
 import pydantic
 
@@ -9,7 +10,7 @@ import pydantic
 class BlogInfo(pydantic.BaseModel):
     unique_id: str
     title: str
-    description: str
+    description: Optional[str] = None
     link: str
     blog_text: str
     published: date
@@ -22,7 +23,7 @@ class BlogInfo(pydantic.BaseModel):
 
 # Define pydantic model for summaries
 class BlogSummary(pydantic.BaseModel):
-    unique_id: str  # TODO fix so same unique_id as for fulltext
+    unique_id: str
     title: str
     blog_summary: str
 

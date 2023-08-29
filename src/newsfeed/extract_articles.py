@@ -25,21 +25,33 @@ def load_metadata(blog_name):
 
 def extract_articles_from_xml(parsed_xml):
     articles = []
-    for item in parsed_xml.find_all("item"):
-        raw_blog_text = item.find("content:encoded").text
+    for item in parsed_xml.find_all(["item", "entry"]):
+        raw_blog_text = item.find("content:encoded" if "item" in item.name else "content").text
         soup = BeautifulSoup(raw_blog_text, "html.parser")
         blog_text = soup.get_text()
         title = item.title.text
         unique_id = create_uuid_from_string(title)
-        article_info = BlogInfo(
-            unique_id=unique_id,
-            title=title,
-            description=item.description.text,
-            link=item.link.text,
-            blog_text=blog_text,
-            published=pd.to_datetime(item.pubDate.text).date(),
-            timestamp=datetime.now(),
-        )
+
+        if "item" in item.name:  # Handle "item" structure as for mit and ai_blog
+            article_info = BlogInfo(
+                unique_id=unique_id,
+                title=title,
+                description=item.description.text,
+                link=item.link.text,
+                blog_text=blog_text,
+                published=pd.to_datetime(item.pubDate.text).date(),
+                timestamp=datetime.now(),
+            )
+        else:  # Handle "entry" structure as for google_ai
+            article_info = BlogInfo(
+                unique_id=unique_id,
+                title=title,
+                link=item.find_all("link")[1]["href"],
+                blog_text=blog_text,
+                published=pd.to_datetime(item.published.text).date(),
+                timestamp=datetime.now(),
+            )
+
         articles.append(article_info)
 
     return articles
@@ -49,9 +61,14 @@ def save_articles(articles, blog_name):
     save_dir = Path("data/data_warehouse", blog_name, "articles")
     save_dir.mkdir(exist_ok=True, parents=True)
     for article in articles:
-        save_path = save_dir / article.get_filename()
-        with open(save_path, "w") as f:
-            f.write(article.json(indent=2))
+        # try/except to skip articles which raise errors
+        try:
+            save_path = save_dir / article.get_filename()
+            with open(save_path, "w") as f:
+                f.write(article.json(indent=2))
+        except Exception as e:
+            print(f"Error saving article: {e}")
+            continue
 
 
 def main(blog_name):
