@@ -28,9 +28,16 @@ def extract_articles_from_xml(parsed_xml):
     for item in parsed_xml.find_all(["item", "entry"]):
         raw_blog_text = item.find("content:encoded" if "item" in item.name else "content").text
         soup = BeautifulSoup(raw_blog_text, "html.parser")
-        blog_text = soup.get_text()
         title = item.title.text
         unique_id = create_uuid_from_string(title)
+        blog_text = soup.get_text()
+
+        # Limit blog_text to 2800 words to fit GPT3.5-turbo summarize model which has maximum 4097 tokens (~3000 words)
+        # Words exciding 2800 are truncated
+        max_words = 2800
+        words = blog_text.split()
+        if len(words) > max_words:
+            blog_text = " ".join(words[:max_words])
 
         if "item" in item.name:  # Handle "item" structure as for mit and ai_blog
             article_info = BlogInfo(
