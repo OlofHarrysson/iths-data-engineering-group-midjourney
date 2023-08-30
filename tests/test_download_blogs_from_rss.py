@@ -9,13 +9,17 @@ def test_import_project() -> None:
 
 def test_imports():
     essential_modules = [
-        "datetime",
         "pydantic",
         "argparse",
         "pathlib",
         "requests",
-        "sys",
         "newsfeed.download_blogs_from_rss",
+        "dash",
+        "pandas",
+        "dash.dependencies",
+        "BeautifulSoup",
+        "bs4",
+        "aiohttp",
     ]
 
     for module in essential_modules:

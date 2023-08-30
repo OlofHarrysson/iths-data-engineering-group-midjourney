@@ -1,47 +1,20 @@
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 
 import dash
-import dash_bootstrap_components as dbc
 import pandas as pd
-import plotly_express as px
 from dash.dependencies import Input, Output
-from layout import layout
+
+from newsfeed.layout import layout
 
 app = dash.Dash(
     __name__,
-    # external_stylesheets=stylesheets,
     meta_tags=[dict(name="viewport", content="width=device-width, initial-scale=1.0")],
 )
 app.layout = layout
-# app.layout = dash.html.Div(
-#     [
-#         dash.dcc.Store(id="blogs-df"),
-#         dash.dcc.Dropdown(
-#             id="data-type-dropdown",
-#             options=[
-#                 {"label": "All Blogs", "value": "all_blogs"},
-#                 {"label": "Google-ai", "value": "google_ai"},
-#                 {"label": "MIT", "value": "mit"},
-#                 {"label": "AI-Blog", "value": "ai_blog"},
-#             ],
-#             value="all_blogs",
-#         ),
-#         dash.dcc.Dropdown(
-#             id="dropdown-choice",
-#             options=[
-#                 {"label": "All Blogs", "value": "all_blogs"},
-#                 {"label": "Google-ai", "value": "google_ai"},
-#                 {"label": "MIT", "value": "mit"},
-#                 {"label": "AI-Blog", "value": "ai_blog"},
-#             ],
-#             value="all_blogs",
-#         ),
-#         dash.html.H2(id="blog-heading"),
-#         dash.html.Div(id="content-container"),
-#     ]
-# )
+
 server = app.server
 NEWS_ARTICLES_SUMMARY_SOURCES = {
     "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/summaries",
@@ -174,17 +147,62 @@ def display_blogs(choice):
             raise ValueError(f"No matching additional info for Id: {unique_id}")
 
         # Create the HTML Div for this particular news item
+        date_object = datetime.strptime(published_date, "%Y-%m-%d")
+        formatted_date = date_object.strftime("%b %d, %Y")
+
         div = [
-            dash.html.H2(title),
-            dash.html.P(f"Published Date: {published_date}"),
-            dash.html.A(f"Link: Read More Here...", href=link, target="_blank"),
-            dash.html.P(summary),
+            dash.html.H2(title, style={"color": "grey", "fontFamily": "Roboto"}),
+            dash.html.P(
+                f"Published On: {formatted_date}",
+                style={
+                    "fontSize": "16px",
+                    "fontFamily": "Roboto",
+                    "fontWeight": "900",
+                    "color": "grey",
+                },
+            ),
+            dash.html.P(
+                summary,
+                style={
+                    "margin": "10px 0",
+                    "textAlign": "left",
+                    "fontFamily": "Roboto",
+                    "fontSize": "16",
+                    "fontWeight": "400",
+                    "lineHeight": "1.4",
+                },
+            ),
+            dash.html.A(
+                f"Link: Read More Here...",
+                href=link,
+                target="_blank",
+                style={
+                    "textDecoration": "underline",
+                    "textAlign": "left",
+                    "fontFamily": "Roboto",
+                    "color": "teal",
+                },
+            ),
             dash.html.Br(),
+            dash.html.Br(),
+            dash.html.Hr(),
+        ]
+        news_item.append(dash.html.Div(div, style={"padding": "10px"}))
+
+    heading = dash.html.Div(
+        [
+            dash.html.H1(
+                "The Midjourney Journal",
+                style={
+                    "fontFamily": "Roboto",
+                    "color": "black",
+                    "marginTop": "20",
+                    "fontSize": "30",
+                },
+            ),
             dash.html.Br(),
         ]
-        news_item.append(dash.html.Div(div))
-
-    heading = dash.html.Div([dash.html.H2("The Midjourney Journal"), dash.html.Br()])
+    )
     content = dash.html.Div(news_item)
     return heading, content
 
