@@ -10,7 +10,7 @@ layout = html.Div(
             src="assets/midjourney-logo.png",
             style={"position": "absolute", "top": "-2%", "left": "-2%", "width": "250px"},
         ),
-        html.H1(id="content-container", style={"text-align": "center"}),
+        html.H1(id="blog-heading", style={"text-align": "center"}),
         html.H2(id="summary-timestamp", children="", style={"text-align": "center"}),
         html.Hr(),
         # 'Select a Blog' dropdown centered and above 'Select an Article'
@@ -55,7 +55,7 @@ layout = html.Div(
             ],
             style={"display": "flex", "justify-content": "center"},
         ),  # Flexbox centering
-        dbc.Container(dbc.Card(dbc.CardBody(dbc.Row(id="blog-heading"))))
+        dbc.Container(dbc.Card(dbc.CardBody(dbc.Row(id="content-container")))),
         # html.Br(),  # Add some space between dropdowns
         # 'Select an Article' dropdown
         # html.Div(
