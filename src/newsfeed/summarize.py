@@ -16,6 +16,8 @@ from langchain.text_splitter import (
     CharacterTextSplitter,  # for splitting the text into chunks
 )
 
+from newsfeed import utils
+
 
 # Read blog_data from DataWearhouse into a list of articles
 def get_articles_from_folder(blog_name):
@@ -26,8 +28,7 @@ def get_articles_from_folder(blog_name):
 
     # Check if directory exists otherwise return None
     if not path_articles.exists():
-        print(f"Directory {path_articles} does not exist.")
-        return None
+        raise FileNotFoundError(f"Directory {path_articles} does not exist.")
 
     # create a list with all articles which are .json
     articles_list = [article for article in path_articles.iterdir() if article.suffix == ".json"]
@@ -36,10 +37,12 @@ def get_articles_from_folder(blog_name):
     articles = []
     for article in articles_list:
         with open(article) as f:
-            str_repr_of_json = f.read()  # f.read returns a string representation of the json file
-            parsed_article = BlogInfo.parse_raw(
-                str_repr_of_json
-            )  # Deserialization from raw json (str) to dict formated according to BlogInfo
+            dict_repr_of_json = json.load(
+                f
+            )  # json.load() directly loads JSON content into a dictionary
+            parsed_article = BlogInfo.parse_obj(
+                dict_repr_of_json
+            )  # Use parse_obj() for dict input (deserialization)
             articles.append(parsed_article)
     return articles
 
@@ -130,8 +133,15 @@ def save_blog_summaries(articles, blog_name):
             )  # Serialize BlogSummary instance to JSON and write it to the file
 
 
-# Main execution if the script is run directly
+# Check if the script is run directly
 if __name__ == "__main__":
-    blog_name = "mit"
+    # Parse command-line arguments using pare_args() from utils
+    args = (
+        utils.parse_args()
+    )  # args = Namespace(blog_name='mit') if program ran with --blog_space mit
+    # Extract the blog_name from the parsed arguments
+    blog_name = args.blog_name
+    # Retrieve a list of articles from the specified blog folder
     articles = get_articles_from_folder(blog_name)
+    # Save summaries for the retrieved articles to the Data Warehouse
     save_blog_summaries(articles, blog_name)

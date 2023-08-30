@@ -15,10 +15,43 @@ app = dash.Dash(
     meta_tags=[dict(name="viewport", content="width=device-width, initial-scale=1.0")],
 )
 app.layout = layout
+# app.layout = dash.html.Div(
+#     [
+#         dash.dcc.Store(id="blogs-df"),
+#         dash.dcc.Dropdown(
+#             id="data-type-dropdown",
+#             options=[
+#                 {"label": "All Blogs", "value": "all_blogs"},
+#                 {"label": "Google-ai", "value": "google_ai"},
+#                 {"label": "MIT", "value": "mit"},
+#                 {"label": "AI-Blog", "value": "ai_blog"},
+#             ],
+#             value="all_blogs",
+#         ),
+#         dash.dcc.Dropdown(
+#             id="dropdown-choice",
+#             options=[
+#                 {"label": "All Blogs", "value": "all_blogs"},
+#                 {"label": "Google-ai", "value": "google_ai"},
+#                 {"label": "MIT", "value": "mit"},
+#                 {"label": "AI-Blog", "value": "ai_blog"},
+#             ],
+#             value="all_blogs",
+#         ),
+#         dash.html.H2(id="blog-heading"),
+#         dash.html.Div(id="content-container"),
+#     ]
+# )
 server = app.server
-NEWS_ARTICLES_SOURCES = {
-    "articles": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/articles",
-    "summaries": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/summaries",
+NEWS_ARTICLES_SUMMARY_SOURCES = {
+    "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/summaries",
+    "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/summaries",
+    "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/summaries",
+}
+NEWS_ARTICLES_ARTICLE_SOURCES = {
+    "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/articles",
+    "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/articles",
+    "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/articles",
 }
 
 
@@ -44,24 +77,32 @@ def read_json_files_to_df(folder_path):
 # This function returns a blog articles from either a specific source or from all
 # depending on the arguments inputed in the function when the function is called
 def get_news_data(news_blog_source="all_blogs"):
-    articles = NEWS_ARTICLES_SOURCES["articles"]
-    summaries = NEWS_ARTICLES_SOURCES["summaries"]
-    if news_blog_source == "articles":
-        df = read_json_files_to_df(articles)
-        df["source"] = "Articles"
-    elif news_blog_source == "summaries":
-        df = read_json_files_to_df(summaries)
-        df["source"] = "Summaries"
+    mit = NEWS_ARTICLES_SUMMARY_SOURCES["mit"]
+    google_ai = NEWS_ARTICLES_SUMMARY_SOURCES["google_ai"]
+    ai_blog = NEWS_ARTICLES_SUMMARY_SOURCES["ai_blog"]
+
+    if news_blog_source == "mit":
+        df = read_json_files_to_df(mit)
+        df["source"] = "mit"
+    elif news_blog_source == "google_ai":
+        df = read_json_files_to_df(google_ai)
+        df["source"] = "google_ai"
+    elif news_blog_source == "ai_blog":
+        df = read_json_files_to_df(ai_blog)
+        df["source"] = "ai_blog"
     elif news_blog_source == "all_blogs":
-        articles_df = read_json_files_to_df(articles)
-        articles_df["source"] = "Articles"
+        mit_df = read_json_files_to_df(mit)
+        mit_df["source"] = "mit"
 
-        summaries_df = read_json_files_to_df(summaries)
-        summaries_df["source"] = "Summaries"
+        google_ai_df = read_json_files_to_df(google_ai)
+        google_ai_df["source"] = "google_ai"
 
-        df = pd.concat([articles_df, summaries_df], ignore_index=True)
+        ai_blog = read_json_files_to_df(ai_blog)
+        ai_blog["source"] = "ai_blog"
+
+        df = pd.concat([mit_df, google_ai_df, ai_blog], ignore_index=True)
     else:
-        raise ValueError("Invalid choice. Use 'articles', 'summaries', or 'all_blogs'")
+        raise ValueError("Invalid choice. Use 'mit', 'google_ai', 'ai_blog', or 'all_blogs'")
 
     return df
 
@@ -71,12 +112,15 @@ def blogs_df(selected_data_type):
     if selected_data_type == "all_blogs":
         all_blogs = get_news_data("all_blogs")
         return all_blogs.to_dict("records")
-    elif selected_data_type == "summaries":
-        summaries = get_news_data("summaries")
-        return summaries.to_dict("records")
-    elif selected_data_type == "articles":
-        articles = get_news_data("articles")
-        return articles.to_dict("records")
+    elif selected_data_type == "google_ai":
+        google_ai = get_news_data("google_ai")
+        return google_ai.to_dict("records")
+    elif selected_data_type == "mit":
+        mit = get_news_data("mit")
+        return mit.to_dict("records")
+    elif selected_data_type == "ai_blog":
+        ai_blog = get_news_data("ai_blog")
+        return ai_blog.to_dict("records")
 
 
 @app.callback(
@@ -86,19 +130,58 @@ def blogs_df(selected_data_type):
 def display_blogs(choice):
     df = get_news_data(choice)
 
-    if "title" not in df.columns or "blog_summary" not in df.columns:
-        return "No title", "No description"
+    if (
+        "title" not in df.columns
+        or "blog_summary" not in df.columns
+        or "unique_id" not in df.columns
+    ):
+        return "No title", "No Summary"
 
-    # Source ChatGPT
-    # This code automatically changes each title item into an H1 tag and
-    # descriptions into paragraph tag
-    titles = [dash.html.H2(title) for title in df["title"]]
-    descriptions = [dash.html.P(description) for description in df["blog_summary"]]
+    # Read article data from various sources
+    mit_articles_df = read_json_files_to_df(NEWS_ARTICLES_ARTICLE_SOURCES["mit"])
+    google_ai_articles_df = read_json_files_to_df(NEWS_ARTICLES_ARTICLE_SOURCES["google_ai"])
+    ai_blog_articles_df = read_json_files_to_df(NEWS_ARTICLES_ARTICLE_SOURCES["ai_blog"])
 
-    # Combine titles and descriptions
+    # Combine all articles into single dataframe for easy look up
+    all_articles_df = pd.concat([mit_articles_df, google_ai_articles_df, ai_blog_articles_df])
+    print(all_articles_df)
+
+    # This ensures that columns with links and published date are actually available
+    # otherwise raise an error
+    if (
+        "unique_id" not in all_articles_df.columns
+        or "link" not in all_articles_df.columns
+        or "published" not in all_articles_df.columns
+    ):
+        raise ValueError(f"No link or published_date for this id")
+
     news_item = []
-    for title, description in zip(titles, descriptions):
-        div = [dash.html.H5(title), dash.html.P(description), dash.html.Br(), dash.html.Br()]
+
+    # Loop through each row in the summaries dataframe
+    for index, row in df.iterrows():
+        title = row["title"]
+        summary = row["blog_summary"]
+        unique_id = row["unique_id"]
+
+        # Look up the additional data based on the unique_id
+        additional_data = all_articles_df[all_articles_df["unique_id"] == unique_id]
+
+        # Fetch link and published date if the unique_id is found
+        if not additional_data.empty:
+            link = additional_data.iloc[0]["link"]
+            published_date = additional_data.iloc[0]["published"]
+        else:
+            raise ValueError(f"No matching additional info for Id: {unique_id}")
+
+        # Create the HTML Div for this particular news item
+        div = [
+            dash.html.H2(title),
+            dash.html.P(f"Published Date: {published_date}"),
+            dash.html.A(f"Link: Read More Here...", href=link, target="_blank"),
+            dash.html.P(summary),
+            dash.html.Br(),
+            dash.html.Br(),
+        ]
         news_item.append(dash.html.Div(div))
 
     heading = dash.html.Div([dash.html.H2("The Midjourney Journal"), dash.html.Br()])

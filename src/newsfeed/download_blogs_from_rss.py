@@ -5,6 +5,8 @@ import requests
 
 LINK_TO_XML_FILE = {
     "mit": "https://news.mit.edu/rss/topic/artificial-intelligence2",
+    "ai_blog": "https://www.artificial-intelligence.blog/ai-news?format=rss",  # https://www.artificial-intelligence.blog/ai-news Artificial Inteligence Blog
+    "google_ai": "http://feeds.feedburner.com/blogspot/gJZg",  # https://ai.googleblog.com/ Google Research Blog
 }
 
 

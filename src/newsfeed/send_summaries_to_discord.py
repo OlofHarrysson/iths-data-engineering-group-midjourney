@@ -15,8 +15,7 @@ webhook_url = "https://discord.com/api/webhooks/1143986724867940452/dkS0pJmG-qQw
 async def get_articles_from_folder(folder_path):
     # This line just checks if the path to the folder sent in as input exist and if it doesnt, an empty list is returned
     if not folder_path.exists():
-        print(f"Directory {folder_path} does not exist.")
-        return []
+        raise FileNotFoundError(f"Directory {folder_path} does not exist.")
 
     # This line iterates throght each item in the folder and adds every file that is a json
     # into the json_files
@@ -33,15 +32,21 @@ async def get_articles_from_folder(folder_path):
 # The function below formats each summary item that will sent to discord to have
 # the format seen below in message_content
 def format_summary_message(summary_item, group_name):
-    blog_title = summary_item.get("title", "N/A")
-    summary_item = summary_item.get("blog_summary", "N/A")
-    formatted_summary_item = summary_item.replace(".\n", ".\n> ")
+    blog_title = summary_item.get("title")
+    blog_summary = summary_item.get("blog_summary")
+
+    if blog_summary is None or blog_title is None:
+        raise ValueError("Article missing a title or blog summary")
+    formatted_summary_item = blog_summary.replace(".\n", ".\n> ")
+
     message_content = (
-        f"━━\n"
-        f" 📌📌📌📌🎯 🏁\n\n"
-        f"📁 **__Group Name:__**\n• {group_name}\n\n"
-        f"📰 **__Blog Title:__**\n• {blog_title}\n\n"
-        f"▶️ **__New Article Summary:__**\n\n> {formatted_summary_item}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🔔 **New Article Alert from {group_name}** 🔔\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"📁 **Group Name:** \n> {group_name}\n\n"
+        f"📰 **Blog Title:** \n> {blog_title}\n\n"
+        f"▶️ **New Article Summary:**\n\n> {formatted_summary_item}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     )
     return message_content
 
