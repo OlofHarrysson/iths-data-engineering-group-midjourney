@@ -13,3 +13,6 @@ openai
 tiktoken
 chromadb
 langchain
+dash
+plotly_express
+dash-bootstrap-components
