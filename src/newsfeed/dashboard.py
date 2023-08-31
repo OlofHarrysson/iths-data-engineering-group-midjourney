@@ -129,10 +129,13 @@ def display_blogs(choice):
 
     news_item_with_date = []
 
+    print(df.head())
+
     # Loop through each row in the summaries dataframe
     for index, row in df.iterrows():
         title = row["title"]
-        summary = row["blog_summary_technical"]
+        summary_technical = row["blog_summary_technical"]
+        summary_non_technical = row["blog_summary_non_technical"]
         unique_id = row["unique_id"]
 
         # Look up the additional data based on the unique_id
@@ -161,7 +164,18 @@ def display_blogs(choice):
                 },
             ),
             dash.html.P(
-                summary,
+                summary_technical,
+                style={
+                    "margin": "10px 0",
+                    "textAlign": "left",
+                    "fontFamily": "Roboto",
+                    "fontSize": "16",
+                    "fontWeight": "400",
+                    "lineHeight": "1.4",
+                },
+            ),
+            dash.html.P(
+                summary_non_technical,
                 style={
                     "margin": "10px 0",
                     "textAlign": "left",
