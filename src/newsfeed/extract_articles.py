@@ -34,7 +34,7 @@ def extract_articles_from_xml(parsed_xml):
 
         # Limit blog_text to 2800 words to fit GPT3.5-turbo summarize model which has maximum 4097 tokens (~3000 words)
         # Words exciding 2800 are truncated
-        max_words = 2800
+        max_words = 1500
         words = blog_text.split()
         if len(words) > max_words:
             blog_text = " ".join(words[:max_words])
