@@ -34,7 +34,7 @@ def get_articles_from_folder(blog_name):
     articles_list = [article for article in path_articles.iterdir() if article.suffix == ".json"]
 
     # read in content of all articles formated according to BlogInfo model into a list
-    articles = []
+    articles_all = []
     for article in articles_list:
         with open(article) as f:
             dict_repr_of_json = json.load(
@@ -43,8 +43,23 @@ def get_articles_from_folder(blog_name):
             parsed_article = BlogInfo.parse_obj(
                 dict_repr_of_json
             )  # Use parse_obj() for dict input (deserialization)
-            articles.append(parsed_article)
-    return articles
+            articles_all.append(parsed_article)
+    return articles_all
+
+
+def get_summaries_from_folder(blog_name):
+    path_summaries = (
+        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
+    )
+    summaries_list = [summary for summary in path_summaries.iterdir() if summary.suffix == ".json"]
+
+    summaries = []
+    for summary in summaries_list:
+        with open(summary) as f:
+            dict_repr_of_json = json.load(f)
+            parsed_summary = BlogSummary.parse_obj(dict_repr_of_json)
+            summaries.append(parsed_summary)
+    return summaries
 
 
 # Set up OpenAI API key
@@ -133,6 +148,19 @@ def save_blog_summaries(articles, blog_name):
             )  # Serialize BlogSummary instance to JSON and write it to the file
 
 
+def main(blog_name):
+    # Retrieve a lists of articles and summaries from the specified blog folders
+    articles_all = get_articles_from_folder(blog_name)
+    summaries = get_summaries_from_folder(blog_name)
+    # Generate list of articles which are present in articles_all but not in summaries based on unique_id
+    summaries_unique_ids_list = [summary.unique_id for summary in summaries]
+    articles = [
+        article for article in articles_all if article.unique_id not in summaries_unique_ids_list
+    ]
+    # Save summaries for the retrieved articles to the Data Warehouse
+    save_blog_summaries(articles, blog_name)
+
+
 # Check if the script is run directly
 if __name__ == "__main__":
     # Parse command-line arguments using pare_args() from utils
@@ -141,7 +169,4 @@ if __name__ == "__main__":
     )  # args = Namespace(blog_name='mit') if program ran with --blog_space mit
     # Extract the blog_name from the parsed arguments
     blog_name = args.blog_name
-    # Retrieve a list of articles from the specified blog folder
-    articles = get_articles_from_folder(blog_name)
-    # Save summaries for the retrieved articles to the Data Warehouse
-    save_blog_summaries(articles, blog_name)
+    main(blog_name)
