@@ -105,7 +105,7 @@ def display_blogs(choice):
 
     if (
         "title" not in df.columns
-        or "blog_summary" not in df.columns
+        or "blog_summary_technical" not in df.columns
         or "unique_id" not in df.columns
     ):
         return "No title", "No Summary"
@@ -132,7 +132,7 @@ def display_blogs(choice):
     # Loop through each row in the summaries dataframe
     for index, row in df.iterrows():
         title = row["title"]
-        summary = row["blog_summary"]
+        summary = row["blog_summary_technical"]
         unique_id = row["unique_id"]
 
         # Look up the additional data based on the unique_id

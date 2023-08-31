@@ -73,14 +73,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 def summarize_text(blog_text, prompt_template):
     model_name = "gpt-3.5-turbo"
 
-    # Split text into smaller chunks
-    text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-        model_name=model_name,
-    )
-    texts = text_splitter.split_text(blog_text)
-
     # Converts each part into a Document object
-    docs = [Document(page_content=t) for t in texts]
+    docs = [Document(page_content=blog_text)]
 
     # Loads the lanugage model
     llm = ChatOpenAI(temperature=0, openai_api_key=openai.api_key, model_name=model_name)
@@ -88,35 +82,16 @@ def summarize_text(blog_text, prompt_template):
     # Defines prompt template
     prompt = PromptTemplate(template=prompt_template, input_variables=["text"])
 
-    # Function that counts the number of tokens in a string
-    def num_tokens_from_string(string, encoding_name):
-        encoding = tiktoken.encoding_for_model(encoding_name)
-        num_tokens = len(encoding.encode(string))
-        return num_tokens
-
-    # Calculates the number of tokens in the blog_text
-    num_tokens = num_tokens_from_string(blog_text, model_name)
-
     # Define model parameters
-    model_max_tokens = 4097
     verbose = False  # If set to True, prints entire un-summarized text
 
     # Loads appropriate chain based on the number of tokens. Stuff or Map Reduce is chosen
-    if num_tokens < model_max_tokens:
-        chain = load_summarize_chain(
-            llm,
-            chain_type="stuff",
-            prompt=prompt,
-            verbose=verbose,
-        )
-    else:
-        chain = load_summarize_chain(
-            llm,
-            chain_type="map_reduce",
-            map_prompt=prompt,
-            combine_prompt=prompt,
-            verbose=verbose,
-        )
+    chain = load_summarize_chain(
+        llm,
+        chain_type="stuff",
+        prompt=prompt,
+        verbose=verbose,
+    )
     summary = chain.run(docs)
 
     return summary
@@ -152,6 +127,7 @@ def save_blog_summaries(articles, blog_name, model_type):
     path_summaries.mkdir(exist_ok=True, parents=True)
 
     for article in articles:
+        print(article.get_filename())
         # generate summary for current article
         summary = transform_to_summary(article, model_type)
 
