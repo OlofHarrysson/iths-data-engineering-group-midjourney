@@ -1,3 +1,4 @@
+import argparse
 import json
 import os  # for loading api from .env file
 import textwrap  # for formatting the output
@@ -17,6 +18,7 @@ from langchain.text_splitter import (
 
 from newsfeed import utils
 from newsfeed.datatypes import BlogInfo, BlogSummary
+from newsfeed.hugging_face_model import summarize_text_with_hugging_face
 
 
 # Read blog_data from DataWearhouse into a list of articles
@@ -121,13 +123,17 @@ def summarize_text(blog_text, prompt_template):
 
 
 # Takes an article represented by a BlogInfo instance, generates a summary and constructs a new BlogSummary instance
-def transform_to_summary(article: BlogInfo) -> BlogSummary:
+def transform_to_summary(article: BlogInfo, model_type) -> BlogSummary:
     # Call the summarize_text function twice to generate both summaries
     technical_prompt = "Write a very short, concise technical summary of the following text. Not more than 600 characteres:{text}"
     non_technical_prompt = "Write a very short, concise non-technical summary suitable for a general audience of the following text. Not more than 600 characteres:{text}"
 
-    technical_summary = summarize_text(article.blog_text, technical_prompt)
-    non_technical_summary = summarize_text(article.blog_text, non_technical_prompt)
+    if model_type == "api":
+        technical_summary = summarize_text(article.blog_text, technical_prompt)
+        non_technical_summary = summarize_text(article.blog_text, non_technical_prompt)
+    else:
+        technical_summary = summarize_text_with_hugging_face(article.description)
+        non_technical_summary = summarize_text_with_hugging_face(article.description)
 
     return BlogSummary(
         unique_id=article.unique_id,
@@ -138,7 +144,7 @@ def transform_to_summary(article: BlogInfo) -> BlogSummary:
 
 
 # save all summeries to DataWarehouse
-def save_blog_summaries(articles, blog_name):
+def save_blog_summaries(articles, blog_name, model_type):
     # Define path to summary folder in data warehouse and create it if does not exist
     path_summaries = (
         Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
@@ -147,7 +153,7 @@ def save_blog_summaries(articles, blog_name):
 
     for article in articles:
         # generate summary for current article
-        summary = transform_to_summary(article)
+        summary = transform_to_summary(article, model_type)
 
         # define path where summary will be saved
         save_path = path_summaries / summary.get_filename()
@@ -158,7 +164,7 @@ def save_blog_summaries(articles, blog_name):
             )  # Serialize BlogSummary instance to JSON and write it to the file
 
 
-def main(blog_name):
+def main(blog_name, model_type):
     path_summaries = (
         Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
     )
@@ -177,15 +183,23 @@ def main(blog_name):
     else:
         articles = get_articles_from_folder(blog_name)
         # Save summaries for the retrieved articles to the Data Warehouse
-    save_blog_summaries(articles, blog_name)
+    save_blog_summaries(articles, blog_name, model_type)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--blog_name", type=str, required=True, choices=["mit", "google_ai", "ai_blog"]
+    )
+    parser.add_argument("--model_type", type=str, default="api", choices=["api", "local_model"])
+    return parser.parse_args()
 
 
 # Check if the script is run directly
 if __name__ == "__main__":
     # Parse command-line arguments using pare_args() from utils
-    args = (
-        utils.parse_args()
-    )  # args = Namespace(blog_name='mit') if program ran with --blog_space mit
+    args = parse_args()  # args = Namespace(blog_name='mit') if program ran with --blog_space mit
     # Extract the blog_name from the parsed arguments
     blog_name = args.blog_name
-    main(blog_name)
+    model_type = args.model_type
+    main(blog_name, model_type)
