@@ -6,7 +6,6 @@ from time import monotonic  # Times the run time of the chain
 
 import openai
 import tiktoken  # for getting the encoding of the model
-from datatypes import BlogInfo, BlogSummary
 from dotenv import load_dotenv
 from langchain.chains.summarize import load_summarize_chain
 from langchain.chat_models import ChatOpenAI  # for generating the summary
@@ -17,6 +16,7 @@ from langchain.text_splitter import (
 )
 
 from newsfeed import utils
+from newsfeed.datatypes import BlogInfo, BlogSummary
 
 
 # Read blog_data from DataWearhouse into a list of articles
