@@ -68,7 +68,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 # Summarization function
-def summarize_text(blog_text):
+def summarize_text(blog_text, prompt_template):
     model_name = "gpt-3.5-turbo"
 
     # Split text into smaller chunks
@@ -84,7 +84,6 @@ def summarize_text(blog_text):
     llm = ChatOpenAI(temperature=0, openai_api_key=openai.api_key, model_name=model_name)
 
     # Defines prompt template
-    prompt_template = """Write a consise summary of the following text:{text}"""
     prompt = PromptTemplate(template=prompt_template, input_variables=["text"])
 
     # Function that counts the number of tokens in a string
@@ -110,20 +109,31 @@ def summarize_text(blog_text):
         )
     else:
         chain = load_summarize_chain(
-            llm, chain_type="map_reduce", map_prompt=prompt, combine_prompt=prompt, verbose=verbose
+            llm,
+            chain_type="map_reduce",
+            map_prompt=prompt,
+            combine_prompt=prompt,
+            verbose=verbose,
         )
     summary = chain.run(docs)
+
     return summary
 
 
 # Takes an article represented by a BlogInfo instance, generates a summary and constructs a new BlogSummary instance
 def transform_to_summary(article: BlogInfo) -> BlogSummary:
-    # Call the summarize_text function to generate a summary of the article's content
-    summarized_text = summarize_text(article.blog_text)
+    # Call the summarize_text function twice to generate both summaries
+    technical_prompt = "Write a very short, concise technical summary of the following text. Not more than 600 characteres:{text}"
+    non_technical_prompt = "Write a very short, concise non-technical summary suitable for a general audience of the following text. Not more than 600 characteres:{text}"
 
-    # Create a new BlogSummary instance
+    technical_summary = summarize_text(article.blog_text, technical_prompt)
+    non_technical_summary = summarize_text(article.blog_text, non_technical_prompt)
+
     return BlogSummary(
-        unique_id=article.unique_id, title=article.title, blog_summary=summarized_text
+        unique_id=article.unique_id,
+        title=article.title,
+        blog_summary_technical=technical_summary,
+        blog_summary_non_technical=non_technical_summary,
     )
 
 
@@ -149,15 +159,24 @@ def save_blog_summaries(articles, blog_name):
 
 
 def main(blog_name):
-    # Retrieve a lists of articles and summaries from the specified blog folders
-    articles_all = get_articles_from_folder(blog_name)
-    summaries = get_summaries_from_folder(blog_name)
-    # Generate list of articles which are present in articles_all but not in summaries based on unique_id
-    summaries_unique_ids_list = [summary.unique_id for summary in summaries]
-    articles = [
-        article for article in articles_all if article.unique_id not in summaries_unique_ids_list
-    ]
-    # Save summaries for the retrieved articles to the Data Warehouse
+    path_summaries = (
+        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
+    )
+    if path_summaries.exists():
+        # Retrieve a lists of articles and summaries from the specified blog folders
+        path_summaries.mkdir(parents=True, exist_ok=True)
+        articles_all = get_articles_from_folder(blog_name)
+        summaries = get_summaries_from_folder(blog_name)
+        # Generate list of articles which are present in articles_all but not in summaries based on unique_id
+        summaries_unique_ids_list = [summary.unique_id for summary in summaries]
+        articles = [
+            article
+            for article in articles_all
+            if article.unique_id not in summaries_unique_ids_list
+        ]
+    else:
+        articles = get_articles_from_folder(blog_name)
+        # Save summaries for the retrieved articles to the Data Warehouse
     save_blog_summaries(articles, blog_name)
 
 

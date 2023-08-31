@@ -25,28 +25,32 @@ async def get_articles_from_folder(folder_path):
     articles = []
     for json_file in json_files:
         with open(json_file) as f:
-            articles.append(json.load(f))
+            loaded_json = json.load(f)
+            articles.append(loaded_json)
+
     return articles
 
 
 # The function below formats each summary item that will sent to discord to have
 # the format seen below in message_content
-def format_summary_message(summary_item, group_name):
-    blog_title = summary_item.get("title")
-    blog_summary = summary_item.get("blog_summary")
 
-    if blog_summary is None or blog_title is None:
+
+def format_summary_message(summary_item, group_name):
+    technical_summary = summary_item.get("blog_summary_technical")
+    non_technical_summary = summary_item.get("blog_summary_non_technical")
+    blog_title = summary_item.get("title")
+
+    if non_technical_summary is None or blog_title is None or technical_summary is None:
         raise ValueError("Article missing a title or blog summary")
-    formatted_summary_item = blog_summary.replace(".\n", ".\n> ")
+
+    formatted_non_tech_summary_item = non_technical_summary.replace(".\n", ".\n> ")
+    formatted_tech_summary_item = technical_summary.replace(".\n", ".\n> ")
 
     message_content = (
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"🔔 **New Article Alert from {group_name}** 🔔\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"📁 **Group Name:** \n> {group_name}\n\n"
+        f"🔔 **Article Alert from {group_name}** 🔔\n\n"
         f"📰 **Blog Title:** \n> {blog_title}\n\n"
-        f"▶️ **New Article Summary:**\n\n> {formatted_summary_item}\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        f"▶️ **Technical Summary:**\n> {formatted_tech_summary_item}\n\n"
+        f"▶️ **Non-Technical Summary:**\n> {formatted_non_tech_summary_item}\n\n"
     )
     return message_content
 
@@ -63,9 +67,12 @@ async def send_summary_to_discord(blog_name):
         group_name = "Midjourney"
 
         summaries = await get_articles_from_folder(folder_path)
+
         for summary in summaries:
             message_content = format_summary_message(summary, group_name)
             await webhook.send(content=message_content)
+            # Adds a sleep time for one second to respect rate limits and prevent 429 Too Many Requests errors from Discord.
+            await asyncio.sleep(1)
 
 
 if __name__ == "__main__":
