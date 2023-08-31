@@ -25,7 +25,8 @@ class BlogInfo(pydantic.BaseModel):
 class BlogSummary(pydantic.BaseModel):
     unique_id: str
     title: str
-    blog_summary: str
+    blog_summary_technical: str
+    blog_summary_non_technical: str
 
     def get_filename(self):
         filename = f'{self.title.replace(" ", "_")}_summary.json'

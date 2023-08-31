@@ -53,7 +53,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 # Summarization function
-def summarize_text(blog_text):
+def summarize_text(blog_text, prompt_template):
     model_name = "gpt-3.5-turbo"
 
     # Split text into smaller chunks
@@ -69,7 +69,7 @@ def summarize_text(blog_text):
     llm = ChatOpenAI(temperature=0, openai_api_key=openai.api_key, model_name=model_name)
 
     # Defines prompt template
-    prompt_template = """Write a consise summary of the following text:{text}"""
+    # prompt_template = """Write a consise summary of the following text:{text}"""
     prompt = PromptTemplate(template=prompt_template, input_variables=["text"])
 
     # Function that counts the number of tokens in a string
@@ -95,20 +95,31 @@ def summarize_text(blog_text):
         )
     else:
         chain = load_summarize_chain(
-            llm, chain_type="map_reduce", map_prompt=prompt, combine_prompt=prompt, verbose=verbose
+            llm,
+            chain_type="map_reduce",
+            map_prompt=prompt,
+            combine_prompt=prompt,
+            verbose=verbose,
         )
     summary = chain.run(docs)
+
     return summary
 
 
 # Takes an article represented by a BlogInfo instance, generates a summary and constructs a new BlogSummary instance
 def transform_to_summary(article: BlogInfo) -> BlogSummary:
-    # Call the summarize_text function to generate a summary of the article's content
-    summarized_text = summarize_text(article.blog_text)
+    # Call the summarize_text function twice to generate both summaries
+    technical_prompt = "Write a very short, concise technical summary of the following text. Not more than 900 characteres:{text}"
+    non_technical_prompt = "Write a very short, concise non-technical summary suitable for a general audience of the following text. Not more than 900 characteres:{text}"
 
-    # Create a new BlogSummary instance
+    technical_summary = summarize_text(article.blog_text, technical_prompt)
+    non_technical_summary = summarize_text(article.blog_text, non_technical_prompt)
+
     return BlogSummary(
-        unique_id=article.unique_id, title=article.title, blog_summary=summarized_text
+        unique_id=article.unique_id,
+        title=article.title,
+        blog_summary_technical=technical_summary,
+        blog_summary_non_technical=non_technical_summary,
     )
 
 
@@ -133,15 +144,24 @@ def save_blog_summaries(articles, blog_name):
             )  # Serialize BlogSummary instance to JSON and write it to the file
 
 
-# Check if the script is run directly
+# Main block with exception handling
 if __name__ == "__main__":
-    # Parse command-line arguments using pare_args() from utils
-    args = (
-        utils.parse_args()
-    )  # args = Namespace(blog_name='mit') if program ran with --blog_space mit
-    # Extract the blog_name from the parsed arguments
-    blog_name = args.blog_name
-    # Retrieve a list of articles from the specified blog folder
-    articles = get_articles_from_folder(blog_name)
-    # Save summaries for the retrieved articles to the Data Warehouse
-    save_blog_summaries(articles, blog_name)
+    try:
+        # Parse command-line arguments using parse_args() from utils
+        args = utils.parse_args()
+
+        # Extract the blog_name from the parsed arguments
+        blog_name = args.blog_name
+
+        # Retrieve a list of articles from the specified blog folder
+        articles = get_articles_from_folder(blog_name)
+
+        if articles:  # check if the list is not empty
+            print(f"First article details: {articles[0]}")  # Print first article details to check
+
+        # Save summaries for the retrieved articles to the Data Warehouse
+        save_blog_summaries(articles, blog_name)
+
+    except Exception as e:
+        # Capture any exceptions that occur and print them
+        print(f"An error occurred: {e}")
