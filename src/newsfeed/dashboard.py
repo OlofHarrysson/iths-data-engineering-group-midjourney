@@ -117,7 +117,6 @@ def display_blogs(choice):
 
     # Combine all articles into single dataframe for easy look up
     all_articles_df = pd.concat([mit_articles_df, google_ai_articles_df, ai_blog_articles_df])
-    print(all_articles_df)
 
     # This ensures that columns with links and published date are actually available
     # otherwise raise an error
@@ -128,7 +127,7 @@ def display_blogs(choice):
     ):
         raise ValueError(f"No link or published_date for this id")
 
-    news_item = []
+    news_item_with_date = []
 
     # Loop through each row in the summaries dataframe
     for index, row in df.iterrows():
@@ -187,7 +186,12 @@ def display_blogs(choice):
             dash.html.Br(),
             dash.html.Hr(),
         ]
-        news_item.append(dash.html.Div(div, style={"padding": "10px"}))
+        news_item_with_date.append(
+            {
+                "date": date_object,  # adds the date object to the list, which means that we can sort by date
+                "div": dash.html.Div(div, style={"padding": "10px"}),  # Your original div
+            }
+        )
 
     heading = dash.html.Div(
         [
@@ -203,7 +207,14 @@ def display_blogs(choice):
             dash.html.Br(),
         ]
     )
-    content = dash.html.Div(news_item)
+
+    # Sort the list by date
+    sorted_news_item_with_date = sorted(news_item_with_date, key=lambda x: x["date"], reverse=True)
+
+    # Extract the sorted divs
+    sorted_news_item = [item["div"] for item in sorted_news_item_with_date]
+
+    content = dash.html.Div(sorted_news_item)
     return heading, content
 
 
