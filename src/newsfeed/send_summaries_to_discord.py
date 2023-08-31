@@ -36,18 +36,21 @@ async def get_articles_from_folder(folder_path):
 
 
 def format_summary_message(summary_item, group_name):
-    blog_title = summary_item.get("title", "N/A")
-    technical_summary = summary_item.get("blog_summary_technical", "N/A")
-    non_technical_summary = summary_item.get("blog_summary_non_technical", "N/A")
+    technical_summary = summary_item.get("blog_summary_technical")
+    non_technical_summary = summary_item.get("blog_summary_non_technical")
+    blog_title = summary_item.get("title")
+
+    if non_technical_summary is None or blog_title is None or technical_summary is None:
+        raise ValueError("Article missing a title or blog summary")
+
+    formatted_non_tech_summary_item = non_technical_summary.replace(".\n", ".\n> ")
+    formatted_tech_summary_item = technical_summary.replace(".\n", ".\n> ")
 
     message_content = (
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"🔔 **New Article Alert from {group_name}** 🔔\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"🔔 **Article Alert from {group_name}** 🔔\n\n"
         f"📰 **Blog Title:** \n> {blog_title}\n\n"
-        f"▶️ **Technical Summary:**\n\n> {technical_summary}\n\n"
-        f"▶️ **Non-Technical Summary:**\n\n> {non_technical_summary}\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        f"▶️ **Technical Summary:**\n> {formatted_tech_summary_item}\n\n"
+        f"▶️ **Non-Technical Summary:**\n> {formatted_non_tech_summary_item}\n\n"
     )
     return message_content
 

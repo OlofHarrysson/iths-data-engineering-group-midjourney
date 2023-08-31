@@ -34,7 +34,7 @@ def get_articles_from_folder(blog_name):
     articles_list = [article for article in path_articles.iterdir() if article.suffix == ".json"]
 
     # read in content of all articles formated according to BlogInfo model into a list
-    articles = []
+    articles_all = []
     for article in articles_list:
         with open(article) as f:
             dict_repr_of_json = json.load(
@@ -43,8 +43,23 @@ def get_articles_from_folder(blog_name):
             parsed_article = BlogInfo.parse_obj(
                 dict_repr_of_json
             )  # Use parse_obj() for dict input (deserialization)
-            articles.append(parsed_article)
-    return articles
+            articles_all.append(parsed_article)
+    return articles_all
+
+
+def get_summaries_from_folder(blog_name):
+    path_summaries = (
+        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
+    )
+    summaries_list = [summary for summary in path_summaries.iterdir() if summary.suffix == ".json"]
+
+    summaries = []
+    for summary in summaries_list:
+        with open(summary) as f:
+            dict_repr_of_json = json.load(f)
+            parsed_summary = BlogSummary.parse_obj(dict_repr_of_json)
+            summaries.append(parsed_summary)
+    return summaries
 
 
 # Set up OpenAI API key
@@ -69,7 +84,6 @@ def summarize_text(blog_text, prompt_template):
     llm = ChatOpenAI(temperature=0, openai_api_key=openai.api_key, model_name=model_name)
 
     # Defines prompt template
-    # prompt_template = """Write a consise summary of the following text:{text}"""
     prompt = PromptTemplate(template=prompt_template, input_variables=["text"])
 
     # Function that counts the number of tokens in a string
@@ -109,8 +123,8 @@ def summarize_text(blog_text, prompt_template):
 # Takes an article represented by a BlogInfo instance, generates a summary and constructs a new BlogSummary instance
 def transform_to_summary(article: BlogInfo) -> BlogSummary:
     # Call the summarize_text function twice to generate both summaries
-    technical_prompt = "Write a very short, concise technical summary of the following text. Not more than 900 characteres:{text}"
-    non_technical_prompt = "Write a very short, concise non-technical summary suitable for a general audience of the following text. Not more than 900 characteres:{text}"
+    technical_prompt = "Write a very short, concise technical summary of the following text. Not more than 600 characteres:{text}"
+    non_technical_prompt = "Write a very short, concise non-technical summary suitable for a general audience of the following text. Not more than 600 characteres:{text}"
 
     technical_summary = summarize_text(article.blog_text, technical_prompt)
     non_technical_summary = summarize_text(article.blog_text, non_technical_prompt)
@@ -144,24 +158,34 @@ def save_blog_summaries(articles, blog_name):
             )  # Serialize BlogSummary instance to JSON and write it to the file
 
 
-# Main block with exception handling
-if __name__ == "__main__":
-    try:
-        # Parse command-line arguments using parse_args() from utils
-        args = utils.parse_args()
-
-        # Extract the blog_name from the parsed arguments
-        blog_name = args.blog_name
-
-        # Retrieve a list of articles from the specified blog folder
+def main(blog_name):
+    path_summaries = (
+        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
+    )
+    if path_summaries.exists():
+        # Retrieve a lists of articles and summaries from the specified blog folders
+        path_summaries.mkdir(parents=True, exist_ok=True)
+        articles_all = get_articles_from_folder(blog_name)
+        summaries = get_summaries_from_folder(blog_name)
+        # Generate list of articles which are present in articles_all but not in summaries based on unique_id
+        summaries_unique_ids_list = [summary.unique_id for summary in summaries]
+        articles = [
+            article
+            for article in articles_all
+            if article.unique_id not in summaries_unique_ids_list
+        ]
+    else:
         articles = get_articles_from_folder(blog_name)
-
-        if articles:  # check if the list is not empty
-            print(f"First article details: {articles[0]}")  # Print first article details to check
-
         # Save summaries for the retrieved articles to the Data Warehouse
-        save_blog_summaries(articles, blog_name)
+    save_blog_summaries(articles, blog_name)
 
-    except Exception as e:
-        # Capture any exceptions that occur and print them
-        print(f"An error occurred: {e}")
+
+# Check if the script is run directly
+if __name__ == "__main__":
+    # Parse command-line arguments using pare_args() from utils
+    args = (
+        utils.parse_args()
+    )  # args = Namespace(blog_name='mit') if program ran with --blog_space mit
+    # Extract the blog_name from the parsed arguments
+    blog_name = args.blog_name
+    main(blog_name)
