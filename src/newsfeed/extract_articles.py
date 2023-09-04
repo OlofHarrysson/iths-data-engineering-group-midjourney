@@ -32,8 +32,8 @@ def extract_articles_from_xml(parsed_xml):
         unique_id = create_uuid_from_string(title)
         blog_text = soup.get_text()
 
-        # Limit blog_text to 2800 words to fit GPT3.5-turbo summarize model which has maximum 4097 tokens (~3000 words)
-        # Words exciding 2800 are truncated
+        # Limit blog_text to 1500 words to fit GPT3.5-turbo summarize model which has maximum 4097 tokens (~3000 words)
+        # Words exciding 1500 are truncated
         max_words = 1500
         words = blog_text.split()
         if len(words) > max_words:

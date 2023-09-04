@@ -75,7 +75,13 @@ async def send_summary_to_discord(blog_name):
             await asyncio.sleep(1)
 
 
+def main(blog_name):
+    print(f"Starting to send summaries for {blog_name}...")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(send_summary_to_discord(blog_name=blog_name))
+    print(f"Done sending summaries for {blog_name}")
+
+
 if __name__ == "__main__":
     args = utils.parse_args()
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(send_summary_to_discord(blog_name=args.blog_name))
+    main(blog_name=args.blog_name)
