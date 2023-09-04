@@ -163,10 +163,14 @@ def main(blog_name):
         Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
     )
     if path_summaries.exists():
+        print(f"Summary path exists for blog: {blog_name}")
         # Retrieve a lists of articles and summaries from the specified blog folders
         path_summaries.mkdir(parents=True, exist_ok=True)
+        print("Fetching existing articles...")
         articles_all = get_articles_from_folder(blog_name)
+        print("Fetching existing summaries...")
         summaries = get_summaries_from_folder(blog_name)
+        print("Filtering articles that need summarization...")
         # Generate list of articles which are present in articles_all but not in summaries based on unique_id
         summaries_unique_ids_list = [summary.unique_id for summary in summaries]
         articles = [
@@ -175,9 +179,13 @@ def main(blog_name):
             if article.unique_id not in summaries_unique_ids_list
         ]
     else:
+        print(f"Summary path does not exist for blog: {blog_name}. Creating one...")
+        print("Fetching all articles for summarization...")
         articles = get_articles_from_folder(blog_name)
-        # Save summaries for the retrieved articles to the Data Warehouse
+    print("Starting the summarization process...")
+    # Save summaries for the retrieved articles to the Data Warehouse
     save_blog_summaries(articles, blog_name)
+    print("Summarization completed.")
 
 
 # Check if the script is run directly
