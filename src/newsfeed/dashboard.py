@@ -50,50 +50,47 @@ def read_json_files_to_df(folder_path):
 # This function returns a blog articles from either a specific source or from all
 # depending on the arguments inputed in the function when the function is called
 def get_news_data(news_blog_source="all_blogs"):
-    mit = NEWS_ARTICLES_SUMMARY_SOURCES["mit"]
-    google_ai = NEWS_ARTICLES_SUMMARY_SOURCES["google_ai"]
-    ai_blog = NEWS_ARTICLES_SUMMARY_SOURCES["ai_blog"]
+    # Define a dictionary to map user choices to their respective source names
+    source_dict = {
+        "mit": "mit",
+        "google_ai": "google_ai",
+        "ai_blog": "ai_blog",
+        "all_blogs": ["mit", "google_ai", "ai_blog"],
+    }
 
-    if news_blog_source == "mit":
-        df = read_json_files_to_df(mit)
-        df["source"] = "mit"
-    elif news_blog_source == "google_ai":
-        df = read_json_files_to_df(google_ai)
-        df["source"] = "google_ai"
-    elif news_blog_source == "ai_blog":
-        df = read_json_files_to_df(ai_blog)
-        df["source"] = "ai_blog"
-    elif news_blog_source == "all_blogs":
-        mit_df = read_json_files_to_df(mit)
-        mit_df["source"] = "mit"
-
-        google_ai_df = read_json_files_to_df(google_ai)
-        google_ai_df["source"] = "google_ai"
-
-        ai_blog = read_json_files_to_df(ai_blog)
-        ai_blog["source"] = "ai_blog"
-
-        df = pd.concat([mit_df, google_ai_df, ai_blog], ignore_index=True)
-    else:
+    # Check if the user choice is valid, raise an error if it's not
+    if news_blog_source not in source_dict:
         raise ValueError("Invalid choice. Use 'mit', 'google_ai', 'ai_blog', or 'all_blogs'")
 
+    # Handle the case where data from all blogs are requested
+    if news_blog_source == "all_blogs":
+        # Initialize an empty list to store DataFrames for each blog source
+        df_list = []
+        # Loop through each blog source
+        for source in source_dict["all_blogs"]:
+            # Read JSON files for the given blog source into a DataFrame
+            temp_df = read_json_files_to_df(NEWS_ARTICLES_SUMMARY_SOURCES[source])
+            # Add a new column to identify the source of each article
+            temp_df["source"] = source
+            # Append the DataFrame to our list
+            df_list.append(temp_df)
+        # Concatenate all DataFrames into a single DataFrame and return
+        return pd.concat(df_list, ignore_index=True)
+
+    # Handle the case where data from a single blog is requested
+    df = read_json_files_to_df(NEWS_ARTICLES_SUMMARY_SOURCES[source_dict[news_blog_source]])
+    # Add a new column to identify the source of each article
+    df["source"] = source_dict[news_blog_source]
+    # Return the DataFrame
     return df
 
 
 @app.callback(Output("blogs-df", "data"), [Input("data-type-dropdown", "value")])
 def blogs_df(selected_data_type):
-    if selected_data_type == "all_blogs":
-        all_blogs = get_news_data("all_blogs")
-        return all_blogs.to_dict("records")
-    elif selected_data_type == "google_ai":
-        google_ai = get_news_data("google_ai")
-        return google_ai.to_dict("records")
-    elif selected_data_type == "mit":
-        mit = get_news_data("mit")
-        return mit.to_dict("records")
-    elif selected_data_type == "ai_blog":
-        ai_blog = get_news_data("ai_blog")
-        return ai_blog.to_dict("records")
+    # Get the news data based on the selected type
+    news_data = get_news_data(selected_data_type)
+    # Convert the DataFrame to a dictionary of records and return
+    return news_data.to_dict("records")
 
 
 @app.callback(
