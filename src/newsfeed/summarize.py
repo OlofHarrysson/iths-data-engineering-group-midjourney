@@ -1,20 +1,15 @@
 import argparse
 import json
 import os  # for loading api from .env file
-import textwrap  # for formatting the output
 from pathlib import Path
 from time import monotonic  # Times the run time of the chain
 
 import openai
-import tiktoken  # for getting the encoding of the model
 from dotenv import load_dotenv
 from langchain.chains.summarize import load_summarize_chain
 from langchain.chat_models import ChatOpenAI  # for generating the summary
 from langchain.docstore.document import Document  # for storing the text
 from langchain.prompts import PromptTemplate  # Template for the prompt
-from langchain.text_splitter import (
-    CharacterTextSplitter,  # for splitting the text into chunks
-)
 
 from newsfeed import utils
 from newsfeed.datatypes import BlogInfo, BlogSummary
@@ -145,10 +140,15 @@ def main(blog_name, model_type):
         Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
     )
     if path_summaries.exists():
+        print("Starting the summarization process...")
+        print(f"Summary path exists for blog: {blog_name}")
         # Retrieve a lists of articles and summaries from the specified blog folders
         path_summaries.mkdir(parents=True, exist_ok=True)
+        print("Fetching existing articles...")
         articles_all = get_articles_from_folder(blog_name)
+        print("Fetching existing summaries...")
         summaries = get_summaries_from_folder(blog_name)
+        print("Filtering articles that need summarization...")
         # Generate list of articles which are present in articles_all but not in summaries based on unique_id
         summaries_unique_ids_list = [summary.unique_id for summary in summaries]
         articles = [
@@ -157,9 +157,12 @@ def main(blog_name, model_type):
             if article.unique_id not in summaries_unique_ids_list
         ]
     else:
+        print(f"Summary path does not exist for blog: {blog_name}. Creating one...")
+        print("Fetching all articles for summarization...")
         articles = get_articles_from_folder(blog_name)
         # Save summaries for the retrieved articles to the Data Warehouse
     save_blog_summaries(articles, blog_name, model_type)
+    print("Summarization completed.")
 
 
 def parse_args():
@@ -168,6 +171,9 @@ def parse_args():
         "--blog_name", type=str, required=True, choices=["mit", "google_ai", "ai_blog"]
     )
     parser.add_argument("--model_type", type=str, default="api", choices=["api", "local_model"])
+
+    # print("Starting the summarization process...")
+    # print("Summarization completed.")
     return parser.parse_args()
 
 
