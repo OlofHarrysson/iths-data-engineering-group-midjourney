@@ -152,6 +152,24 @@ def display_blogs(choice):
         date_object = datetime.strptime(published_date, "%Y-%m-%d")
         formatted_date = date_object.strftime("%b %d, %Y")
 
+        # Create a collapsible summary - this is the non-technical summary hidden behind a button
+        collapsible_summary = dash.html.Details(
+            [
+                dash.html.Summary("Show Non-Technical Summary", style={"fontWeight": "bold"}),
+                dash.html.P(
+                    summary_non_technical,
+                    style={
+                        "margin": "10px 0",
+                        "textAlign": "left",
+                        "fontFamily": "Roboto",
+                        "fontSize": "16",
+                        "fontWeight": "400",
+                        "lineHeight": "1.4",
+                    },
+                ),
+            ]
+        )
+
         div = [
             dash.html.H2(title, style={"color": "grey", "fontFamily": "Roboto"}),
             dash.html.P(
@@ -174,15 +192,15 @@ def display_blogs(choice):
                     "lineHeight": "1.4",
                 },
             ),
-            dash.html.P(
-                summary_non_technical,
+            collapsible_summary,
+            dash.html.A(
+                href=link,
+                target="_blank",
                 style={
-                    "margin": "10px 0",
+                    "textDecoration": "underline",
                     "textAlign": "left",
                     "fontFamily": "Roboto",
-                    "fontSize": "16",
-                    "fontWeight": "400",
-                    "lineHeight": "1.4",
+                    "color": "teal",
                 },
             ),
             dash.html.A(
