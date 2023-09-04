@@ -1,12 +1,16 @@
 import json
 import os
-from datetime import datetime
 from pathlib import Path
 
 import dash
 import pandas as pd
 from dash.dependencies import Input, Output
 
+from layouts.article_item import (
+    dashboard_content_container,
+    news_artcle_div,
+    title_heading_for_dashboard,
+)
 from newsfeed.layout import layout
 
 app = dash.Dash(
@@ -142,71 +146,14 @@ def display_blogs(choice):
         if not additional_data.empty:
             link = additional_data.iloc[0]["link"]
             published_date = additional_data.iloc[0]["published"]
+            news_item_with_date.append(news_artcle_div(title, published_date, summary, link))
+
         else:
             raise ValueError(f"No matching additional info for Id: {unique_id}")
 
         # Create the HTML Div for this particular news item
-        date_object = datetime.strptime(published_date, "%Y-%m-%d")
-        formatted_date = date_object.strftime("%b %d, %Y")
 
-        div = [
-            dash.html.H2(title, style={"color": "grey", "fontFamily": "Roboto"}),
-            dash.html.P(
-                f"Published On: {formatted_date}",
-                style={
-                    "fontSize": "16px",
-                    "fontFamily": "Roboto",
-                    "fontWeight": "900",
-                    "color": "grey",
-                },
-            ),
-            dash.html.P(
-                summary,
-                style={
-                    "margin": "10px 0",
-                    "textAlign": "left",
-                    "fontFamily": "Roboto",
-                    "fontSize": "16",
-                    "fontWeight": "400",
-                    "lineHeight": "1.4",
-                },
-            ),
-            dash.html.A(
-                f"Link: Read More Here...",
-                href=link,
-                target="_blank",
-                style={
-                    "textDecoration": "underline",
-                    "textAlign": "left",
-                    "fontFamily": "Roboto",
-                    "color": "teal",
-                },
-            ),
-            dash.html.Br(),
-            dash.html.Br(),
-            dash.html.Hr(),
-        ]
-        news_item_with_date.append(
-            {
-                "date": date_object,  # adds the date object to the list, which means that we can sort by date
-                "div": dash.html.Div(div, style={"padding": "10px"}),  # Your original div
-            }
-        )
-
-    heading = dash.html.Div(
-        [
-            dash.html.H1(
-                "The Midjourney Journal",
-                style={
-                    "fontFamily": "Roboto",
-                    "color": "black",
-                    "marginTop": "20",
-                    "fontSize": "30",
-                },
-            ),
-            dash.html.Br(),
-        ]
-    )
+    heading = title_heading_for_dashboard(heading="The Midjourney Journal")
 
     # Sort the list by date
     sorted_news_item_with_date = sorted(news_item_with_date, key=lambda x: x["date"], reverse=True)
@@ -214,7 +161,7 @@ def display_blogs(choice):
     # Extract the sorted divs
     sorted_news_item = [item["div"] for item in sorted_news_item_with_date]
 
-    content = dash.html.Div(sorted_news_item)
+    content = dashboard_content_container(sorted_news_item)
     return heading, content
 
 
