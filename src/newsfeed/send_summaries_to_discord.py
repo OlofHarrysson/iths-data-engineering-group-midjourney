@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import json
 from pathlib import Path
 
@@ -55,6 +56,32 @@ def format_summary_message(summary_item, group_name):
     return message_content
 
 
+# function that truncates the summary to 2000 characters, otherwise discord will give us an error
+def truncate_string(input_str, max_len=2000):
+    if len(input_str) > max_len:
+        input_str = input_str[: max_len - 3] + "..."
+    return input_str
+
+
+# generates a hash for each summary
+def hash_summary(summary):
+    return hashlib.sha256(json.dumps(summary, sort_keys=True).encode()).hexdigest()
+
+
+# reads the sent log file
+def read_sent_log():
+    try:
+        with open("sent_log.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+
+def write_sent_log(sent_log):
+    with open("sent_log.json", "w") as f:
+        json.dump(sent_log, f)
+
+
 # This async function first uses the aiohttp.ClientSession to create an http session
 # Then a webhook is created with an asynchronous adapter
 # The summaries are loop through then sent to the discord webhook chanel
@@ -68,11 +95,19 @@ async def send_summary_to_discord(blog_name):
 
         summaries = await get_articles_from_folder(folder_path)
 
+        sent_log = read_sent_log()
+
         for summary in summaries:
-            message_content = format_summary_message(summary, group_name)
-            await webhook.send(content=message_content)
-            # Adds a sleep time for one second to respect rate limits and prevent 429 Too Many Requests errors from Discord.
-            await asyncio.sleep(1)
+            summary_hash = hash_summary(summary)
+
+            if summary_hash not in sent_log:
+                message_content = format_summary_message(summary, group_name)
+                message_content = truncate_string(message_content)  # Truncate before sending
+                await webhook.send(content=message_content)
+
+                sent_log.append(summary_hash)
+                write_sent_log(sent_log)
+                await asyncio.sleep(1)
 
 
 def main(blog_name):
