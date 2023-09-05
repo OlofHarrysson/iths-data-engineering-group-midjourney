@@ -130,10 +130,13 @@ def display_blogs(choice):
 
     news_item_with_date = []
 
+    print(df.head())
+
     # Loop through each row in the summaries dataframe
     for index, row in df.iterrows():
         title = row["title"]
-        summary = row["blog_summary_technical"]
+        summary_technical = row["blog_summary_technical"]
+        summary_non_technical = row["blog_summary_non_technical"]
         unique_id = row["unique_id"]
 
         # Look up the additional data based on the unique_id
@@ -143,7 +146,11 @@ def display_blogs(choice):
         if not additional_data.empty:
             link = additional_data.iloc[0]["link"]
             published_date = additional_data.iloc[0]["published"]
-            news_item_with_date.append(news_artcle_div(title, published_date, summary, link))
+            news_item_with_date.append(
+                news_artcle_div(
+                    title, published_date, summary_technical, summary_non_technical, link
+                )
+            )
 
         else:
             raise ValueError(f"No matching additional info for Id: {unique_id}")
