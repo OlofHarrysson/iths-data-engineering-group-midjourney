@@ -3,7 +3,7 @@ from datetime import datetime
 import dash
 
 
-def news_artcle_div(title, published_date, summary, ntsummary, link):
+def news_artcle_div(title, published_date, technical_summary, non_technical_summary, link):
     date_object = datetime.strptime(published_date, "%Y-%m-%d")
     formatted_date = date_object.strftime("%b %d, %Y")
 
@@ -11,7 +11,7 @@ def news_artcle_div(title, published_date, summary, ntsummary, link):
         [
             dash.html.Summary("Show Non-Technical Summary", style={"fontWeight": "bold"}),
             dash.html.P(
-                ntsummary,
+                non_technical_summary,
                 style={
                     "margin": "10px 0",
                     "textAlign": "left",
@@ -36,7 +36,7 @@ def news_artcle_div(title, published_date, summary, ntsummary, link):
             },
         ),
         dash.html.P(
-            summary,
+            technical_summary,
             style={
                 "margin": "10px 0",
                 "textAlign": "left",
