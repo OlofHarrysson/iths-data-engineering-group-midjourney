@@ -3,13 +3,23 @@ from datetime import datetime
 import dash
 
 
-def news_artcle_div(title, published_date, technical_summary, non_technical_summary, link):
+def news_artcle_div(
+    title, published_date, technical_summary, non_technical_summary, link, language
+):
     date_object = datetime.strptime(published_date, "%Y-%m-%d")
     formatted_date = date_object.strftime("%b %d, %Y")
 
+    collapsible_label = (
+        "Show Non-Technical Summary"
+        if language == "english"
+        else "Visa Icke-Teknisk Sammanfattning"
+    )
+    published_on_label = "Published On" if language == "english" else "Publicerad"
+    link_label = "Read more..." if language == "english" else "Läs mer här på engelska..."
+
     collapsible_summary = dash.html.Details(
         [
-            dash.html.Summary("Show Non-Technical Summary", style={"fontWeight": "bold"}),
+            dash.html.Summary(collapsible_label, style={"fontWeight": "bold"}),
             dash.html.P(
                 non_technical_summary,
                 style={
@@ -27,7 +37,7 @@ def news_artcle_div(title, published_date, technical_summary, non_technical_summ
     div = [
         dash.html.H2(title, style={"color": "grey", "fontFamily": "Roboto"}),
         dash.html.P(
-            f"Published On: {formatted_date}",
+            f"{published_on_label}: {formatted_date}",
             style={
                 "fontSize": "16px",
                 "fontFamily": "Roboto",
@@ -47,27 +57,33 @@ def news_artcle_div(title, published_date, technical_summary, non_technical_summ
             },
         ),
         collapsible_summary,
-        dash.html.A(
-            href=link,
-            target="_blank",
-            style={
-                "textDecoration": "underline",
-                "textAlign": "left",
-                "fontFamily": "Roboto",
-                "color": "teal",
-            },
+        dash.html.Div(
+            [
+                dash.html.A(
+                    f"{link_label}",
+                    href=link,
+                    target="_blank",
+                    style={
+                        "textDecoration": "none",
+                        "textAlign": "left",
+                        "fontFamily": "Roboto",
+                        "color": "teal",
+                    },
+                )
+            ],
+            style={"textAlign": "right"},
         ),
-        dash.html.A(
-            f"Link: Read More Here...",
-            href=link,
-            target="_blank",
-            style={
-                "textDecoration": "underline",
-                "textAlign": "left",
-                "fontFamily": "Roboto",
-                "color": "teal",
-            },
-        ),
+        # dash.html.A(
+        #     f"{link_label}",
+        #     href=link,
+        #     target="_blank",
+        #     style={
+        #         "textDecoration": "none",
+        #         "textAlign": "left",
+        #         "fontFamily": "Roboto",
+        #         "color": "teal",
+        #     },
+        # ),
         dash.html.Br(),
         dash.html.Br(),
         dash.html.Hr(),

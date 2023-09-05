@@ -136,8 +136,8 @@ def language_choice():
                             "padding": "30px",
                         },
                         children=[
-                            html.Button("🇬🇧 English", style={"padding": "5px"}),
-                            html.Button("🇸🇪 Swedish", style={"padding": "5px"}),
+                            html.Button("🇬🇧 English", style={"padding": "5px"}, id="btn-english"),
+                            html.Button("🇸🇪 Swedish", style={"padding": "5px"}, id="btn-swedish"),
                         ],
                     )
                 ],
@@ -208,6 +208,7 @@ def create_layout():
                 style={"marginTop": "170px"},
             ),
             dcc.Store(id="blogs-df"),
+            dcc.Store(id="language-store", data={"language": "english"}),
         ]
     )
 
