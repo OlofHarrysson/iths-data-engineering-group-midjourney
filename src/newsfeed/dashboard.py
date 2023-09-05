@@ -30,6 +30,16 @@ NEWS_ARTICLES_ARTICLE_SOURCES = {
     "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/articles",
     "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/articles",
 }
+SWEDISH_NEWS_ARTICLES_SUMMARY_SOURCES = {
+    "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/summaries",
+    "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/summaries",
+    "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/summaries",
+}
+SWEDISH_NEWS_ARTICLES_ARTICLE_SOURCES = {
+    "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/articles",
+    "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/articles",
+    "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/articles",
+}
 
 
 # This function takes reads the json files then returns a df of the said json file. This should
