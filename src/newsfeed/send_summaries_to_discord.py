@@ -34,8 +34,6 @@ async def get_articles_from_folder(folder_path):
 
 # The function below formats each summary item that will sent to discord to have
 # the format seen below in message_content
-
-
 def format_summary_message(summary_item, group_name):
     technical_summary = summary_item.get("blog_summary_technical")
     non_technical_summary = summary_item.get("blog_summary_non_technical")
@@ -59,11 +57,13 @@ def format_summary_message(summary_item, group_name):
 # function that truncates the summary to 2000 characters, otherwise discord will give us an error
 def truncate_string(input_str, max_len=2000):
     if len(input_str) > max_len:
-        input_str = input_str[: max_len - 3] + "..."
+        input_str = (
+            input_str[: max_len - 3] + "..."
+        )  # removes the last 3 characters and replaces them with "..."
     return input_str
 
 
-# generates a hash for each summary
+# generates a hash for each summary (that goes into the sent log)
 def hash_summary(summary):
     return hashlib.sha256(json.dumps(summary, sort_keys=True).encode()).hexdigest()
 
@@ -77,6 +77,7 @@ def read_sent_log():
         return []
 
 
+# writes to the sent log file
 def write_sent_log(sent_log):
     with open("sent_log.json", "w") as f:
         json.dump(sent_log, f)
@@ -92,9 +93,7 @@ async def send_summary_to_discord(blog_name):
             Path(__file__).parent.parent.parent / f"data/data_warehouse/{blog_name}/summaries"
         )
         group_name = "Midjourney"
-
         summaries = await get_articles_from_folder(folder_path)
-
         sent_log = read_sent_log()
 
         for summary in summaries:
@@ -102,7 +101,9 @@ async def send_summary_to_discord(blog_name):
 
             if summary_hash not in sent_log:
                 message_content = format_summary_message(summary, group_name)
-                message_content = truncate_string(message_content)  # Truncate before sending
+                message_content = truncate_string(
+                    message_content
+                )  # Runs message through truncate function, making sure it is less than 2000 characters
                 await webhook.send(content=message_content)
 
                 sent_log.append(summary_hash)
