@@ -63,6 +63,7 @@ def truncate_string(input_str, max_len=2000):
     return input_str
 
 
+# Explanations of hash_summary, read_sent_log, write_sent_log and send_summary_to_discord are in: tests/only_new_summaries_explained.py
 # generates a hash for each summary (that goes into the sent log)
 def hash_summary(summary):
     return hashlib.sha256(json.dumps(summary, sort_keys=True).encode()).hexdigest()
@@ -99,12 +100,15 @@ async def send_summary_to_discord(blog_name):
         for summary in summaries:
             summary_hash = hash_summary(summary)
 
+            # If summary is not in hash, then it goes through this if statement
             if summary_hash not in sent_log:
                 message_content = format_summary_message(summary, group_name)
                 message_content = truncate_string(
                     message_content
                 )  # Runs message through truncate function, making sure it is less than 2000 characters
-                await webhook.send(content=message_content)
+                await webhook.send(
+                    content=message_content
+                )  # Only sends message within this if-statement
 
                 sent_log.append(summary_hash)
                 write_sent_log(sent_log)
