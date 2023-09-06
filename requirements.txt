@@ -18,3 +18,4 @@ dash-bootstrap-components
 sentencepiece
 transformers
 sacremoses
+python-dotenv
