@@ -16,3 +16,6 @@ langchain
 dash
 plotly_express
 dash-bootstrap-components
+sentencepiece
+transformers
+sacremoses
