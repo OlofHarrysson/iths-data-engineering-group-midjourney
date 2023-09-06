@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import json
 from pathlib import Path
 
@@ -33,11 +34,16 @@ async def get_articles_from_folder(folder_path):
 
 # The function below formats each summary item that will sent to discord to have
 # the format seen below in message_content
-
-
+# tech-, and non-tech summary are truncated seperately instead of truncating the whole discord summary
 def format_summary_message(summary_item, group_name):
     technical_summary = summary_item.get("blog_summary_technical")
+    technical_summary = truncate_string(
+        technical_summary, max_len=900
+    )  # truncates the technical summary to 900 characters
     non_technical_summary = summary_item.get("blog_summary_non_technical")
+    non_technical_summary = truncate_string(
+        non_technical_summary, max_len=900
+    )  # same as technical summary
     blog_title = summary_item.get("title")
 
     if non_technical_summary is None or blog_title is None or technical_summary is None:
@@ -55,6 +61,36 @@ def format_summary_message(summary_item, group_name):
     return message_content
 
 
+# function that truncates a string to a certain length
+def truncate_string(input_str, max_len):
+    if len(input_str) > max_len:
+        input_str = (
+            input_str[: max_len - 3] + "..."
+        )  # removes the last 3 characters and replaces them with "..."
+    return input_str
+
+
+# Explanations of hash_summary, read_sent_log, write_sent_log and send_summary_to_discord are in: tests/only_new_summaries_explained.py
+# generates a hash for each summary (that goes into the sent log)
+def hash_summary(summary):
+    return hashlib.sha256(json.dumps(summary, sort_keys=True).encode()).hexdigest()
+
+
+# reads the sent log file
+def read_sent_log():
+    try:
+        with open("sent_log.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+
+# writes to the sent log file
+def write_sent_log(sent_log):
+    with open("sent_log.json", "w") as f:
+        json.dump(sent_log, f)
+
+
 # This async function first uses the aiohttp.ClientSession to create an http session
 # Then a webhook is created with an asynchronous adapter
 # The summaries are loop through then sent to the discord webhook chanel
@@ -65,14 +101,22 @@ async def send_summary_to_discord(blog_name):
             Path(__file__).parent.parent.parent / f"data/data_warehouse/{blog_name}/summaries"
         )
         group_name = "Midjourney"
-
         summaries = await get_articles_from_folder(folder_path)
+        sent_log = read_sent_log()
 
         for summary in summaries:
-            message_content = format_summary_message(summary, group_name)
-            await webhook.send(content=message_content)
-            # Adds a sleep time for one second to respect rate limits and prevent 429 Too Many Requests errors from Discord.
-            await asyncio.sleep(1)
+            summary_hash = hash_summary(summary)
+
+            # If summary is not in hash, then it goes through this if statement
+            if summary_hash not in sent_log:
+                message_content = format_summary_message(summary, group_name)
+                await webhook.send(
+                    content=message_content
+                )  # Only sends message within this if-statement
+
+                sent_log.append(summary_hash)
+                write_sent_log(sent_log)
+                await asyncio.sleep(1)
 
 
 def main(blog_name):
