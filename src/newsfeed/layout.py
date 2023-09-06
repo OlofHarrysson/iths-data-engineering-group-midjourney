@@ -16,11 +16,11 @@ def create_logo():
                             "position": "absolute",
                             "top": "-2%",
                             "left": "-2%",
-                            "width": "250px",
+                            "width": "300px",
                         },
                     )
                 ]
-            )
+            ),
         )
     )
 
@@ -29,7 +29,8 @@ def create_logo():
 def create_blog_heading():
     """Creates the blog heading section of the layout"""
     return dbc.Col(
-        dbc.Card(dbc.CardBody([dbc.Row(id="blog-heading", style={"text-align": "center"})]))
+        dbc.Card(dbc.CardBody([dbc.Row(id="blog-heading", style={"text-align": "center"})])),
+        style={"overflow": "hidden"},
     )
 
 
@@ -51,7 +52,7 @@ def create_data_type_dropdown():
                                 {"label": "AI-Blog", "value": "ai_blog"},
                             ],
                             value="all_blogs",
-                            style={"width": "300px", "height": "0px"},
+                            style={"width": "0px", "height": "0px"},
                         )
                     )
                 ],
@@ -75,18 +76,18 @@ def create_blog_choice_dropdown():
                                 [
                                     dbc.Row(
                                         [
-                                            dbc.Col(
-                                                dbc.Label(
-                                                    "Select a Blog",
-                                                    html_for="dropdown-choice",
-                                                    style={
-                                                        "fontSize": "18px",
-                                                        "fontFamily": "Roboto",
-                                                        "marginBottom": "10px",
-                                                    },
-                                                ),
-                                                width={"size": 3},
-                                            ),
+                                            # dbc.Col(
+                                            #     dbc.Label(
+                                            #         "Select a Blog",
+                                            #         html_for="dropdown-choice",
+                                            #         style={
+                                            #             "fontSize": "18px",
+                                            #             "fontFamily": "Roboto",
+                                            #             "marginBottom": "10px",
+                                            #         },
+                                            #     ),
+                                            #     width={"size": 3},
+                                            # ),
                                             dbc.Col(
                                                 dcc.Dropdown(
                                                     id="dropdown-choice",
@@ -103,11 +104,12 @@ def create_blog_choice_dropdown():
                                                         {"label": "AI-Blog", "value": "ai_blog"},
                                                     ],
                                                     value="all_blogs",
-                                                    style={"width": "300px"},
+                                                    style={"width": "300px", "margintop": "100px"},
                                                 ),
                                                 width={"size": 3},
                                             ),
-                                        ]
+                                        ],
+                                        style={"margintop": "25px"},
                                     )
                                 ]
                             )
@@ -120,6 +122,32 @@ def create_blog_choice_dropdown():
     )
 
 
+def language_choice():
+    return dbc.Col(
+        dbc.Card(
+            dbc.CardBody(
+                children=[
+                    html.Div(
+                        style={
+                            "display": "flex",
+                            "justifyContent": "space-evenly",
+                            "alignItems": "center",
+                            "height": "100%",
+                            "padding": "30px",
+                        },
+                        children=[
+                            html.Button("🇬🇧 English", style={"padding": "5px"}, id="btn-english"),
+                            html.Button("🇸🇪 Swedish", style={"padding": "5px"}, id="btn-swedish"),
+                        ],
+                    )
+                ],
+                style={"bottom": "0px", "width": "100%"},
+            ),
+        ),
+        style={"position": "relative"},
+    )
+
+
 # creates layout
 def create_layout():
     """Creates the layout for the dashboard"""
@@ -128,13 +156,27 @@ def create_layout():
             dbc.Card(
                 dbc.CardBody(
                     dbc.Row(
-                        className="mb-44",
+                        className="mb-4",
                         children=[
-                            dbc.Row(children=[create_logo(), create_blog_heading()]),
                             dbc.Row(
                                 children=[
-                                    create_data_type_dropdown(),
-                                    create_blog_choice_dropdown(),
+                                    html.Div(
+                                        style={
+                                            "display": "flex",
+                                            "justifyContent": "space-between",
+                                        },
+                                        children=[
+                                            html.Div(create_logo(), style={"flex": "1"}),
+                                            html.Div(create_blog_heading(), style={"flex": "4"}),
+                                            html.Div(language_choice(), style={"flex": "1"}),
+                                        ],
+                                    )
+                                ]
+                            ),
+                            dbc.Row(
+                                children=[
+                                    dbc.Col(create_data_type_dropdown(), width=1),
+                                    dbc.Col(create_blog_choice_dropdown(), width=7),
                                 ]
                             ),
                         ],
@@ -166,6 +208,7 @@ def create_layout():
                 style={"marginTop": "170px"},
             ),
             dcc.Store(id="blogs-df"),
+            dcc.Store(id="language-store", data={"language": "english"}),
         ]
     )
 
