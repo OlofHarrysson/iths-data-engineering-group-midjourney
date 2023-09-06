@@ -1,6 +1,9 @@
+import pytest
+
 from newsfeed.dashboard import get_news_data
 
 
+@pytest.mark.local_test("Run with 'pytest -m local_test tests/'")
 def test_get_news_data_source_mit():
     df = get_news_data(news_blog_source="mit")
     # checks that the source column exists in the dataframe.
@@ -9,18 +12,21 @@ def test_get_news_data_source_mit():
     assert all(df["source"] == "mit")
 
 
+@pytest.mark.local_test("Run with 'pytest -m local_test tests/'")
 def test_get_news_data_source_google_ai():
     df = get_news_data(news_blog_source="google_ai")
     assert "source" in df.columns
     assert all(df["source"] == "google_ai")
 
 
+@pytest.mark.local_test("Run with 'pytest -m local_test tests/'")
 def test_get_news_data_source_ai_blog():
     df = get_news_data(news_blog_source="ai_blog")
     assert "source" in df.columns
     assert all(df["source"] == "ai_blog")
 
 
+@pytest.mark.local_test("Run with 'pytest -m local_test tests/'")
 def test_get_news_data_source_all_blogs():
     df = get_news_data(news_blog_source="all_blogs")
     assert "source" in df.columns
