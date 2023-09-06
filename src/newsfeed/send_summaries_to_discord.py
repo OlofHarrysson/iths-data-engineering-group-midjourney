@@ -34,9 +34,16 @@ async def get_articles_from_folder(folder_path):
 
 # The function below formats each summary item that will sent to discord to have
 # the format seen below in message_content
+# tech-, and non-tech summary are truncated seperately instead of truncating the whole discord summary
 def format_summary_message(summary_item, group_name):
     technical_summary = summary_item.get("blog_summary_technical")
+    technical_summary = truncate_string(
+        technical_summary, max_len=900
+    )  # truncates the technical summary to 900 characters
     non_technical_summary = summary_item.get("blog_summary_non_technical")
+    non_technical_summary = truncate_string(
+        non_technical_summary, max_len=900
+    )  # same as technical summary
     blog_title = summary_item.get("title")
 
     if non_technical_summary is None or blog_title is None or technical_summary is None:
@@ -54,8 +61,8 @@ def format_summary_message(summary_item, group_name):
     return message_content
 
 
-# function that truncates the summary to 2000 characters, otherwise discord will give us an error
-def truncate_string(input_str, max_len=2000):
+# function that truncates a string to a certain length
+def truncate_string(input_str, max_len):
     if len(input_str) > max_len:
         input_str = (
             input_str[: max_len - 3] + "..."
@@ -103,9 +110,6 @@ async def send_summary_to_discord(blog_name):
             # If summary is not in hash, then it goes through this if statement
             if summary_hash not in sent_log:
                 message_content = format_summary_message(summary, group_name)
-                message_content = truncate_string(
-                    message_content
-                )  # Runs message through truncate function, making sure it is less than 2000 characters
                 await webhook.send(
                     content=message_content
                 )  # Only sends message within this if-statement
