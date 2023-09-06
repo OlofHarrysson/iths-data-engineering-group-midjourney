@@ -120,6 +120,7 @@ def fetch_and_prepare_articles(language, df):
         title = row["title"]
         summary_technical = row["blog_summary_technical"]
         summary_non_technical = row["blog_summary_non_technical"]
+        article_source = row["source"]
         unique_id = row["unique_id"]
 
         # Look up the additional data based on the unique_id
@@ -129,9 +130,16 @@ def fetch_and_prepare_articles(language, df):
         if not additional_data.empty:
             link = additional_data.iloc[0]["link"]
             published_date = additional_data.iloc[0]["published"]
+
             news_item_with_date.append(
                 news_artcle_div(
-                    title, published_date, summary_technical, summary_non_technical, link, language
+                    title=title,
+                    published_date=published_date,
+                    technical_summary=summary_technical,
+                    non_technical_summary=summary_non_technical,
+                    link=link,
+                    language=language,
+                    article_source=article_source.title(),
                 )
             )
 

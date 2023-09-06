@@ -4,11 +4,12 @@ import dash
 
 
 def news_artcle_div(
-    title, published_date, technical_summary, non_technical_summary, link, language
+    title, published_date, technical_summary, non_technical_summary, link, language, article_source
 ):
     date_object = datetime.strptime(published_date, "%Y-%m-%d")
     formatted_date = date_object.strftime("%b %d, %Y")
 
+    article_source_prefix = "by" if language == "english" else "av"
     collapsible_label = (
         "Show Non-Technical Summary"
         if language == "english"
@@ -37,12 +38,12 @@ def news_artcle_div(
     div = [
         dash.html.H2(title, style={"color": "grey", "fontFamily": "Roboto"}),
         dash.html.P(
-            f"{published_on_label}: {formatted_date}",
+            f"{published_on_label}: {formatted_date} {article_source_prefix} {article_source}",
             style={
                 "fontSize": "16px",
                 "fontFamily": "Roboto",
                 "fontWeight": "900",
-                "color": "grey",
+                "color": "teal",
             },
         ),
         dash.html.P(
