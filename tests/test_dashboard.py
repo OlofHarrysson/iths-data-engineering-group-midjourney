@@ -1,4 +1,4 @@
-from newsfeed import get_news_data
+from newsfeed.dashboard import get_news_data
 
 
 def test_get_news_data_source_mit():
