@@ -19,9 +19,7 @@ from newsfeed.hugging_face_model import summarize_text_with_hugging_face
 # Read blog_data from DataWearhouse into a list of articles
 def get_articles_from_folder(blog_name):
     # define path to articles in DataWarehouse
-    path_articles = (
-        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "articles"
-    )
+    path_articles = Path("data/data_warehouse") / blog_name / "articles"
 
     # Check if directory exists otherwise return None
     if not path_articles.exists():
@@ -45,9 +43,7 @@ def get_articles_from_folder(blog_name):
 
 
 def get_summaries_from_folder(blog_name):
-    path_summaries = (
-        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
-    )
+    path_summaries = Path("data/data_warehouse") / blog_name / "summaries"
     summaries_list = [summary for summary in path_summaries.iterdir() if summary.suffix == ".json"]
 
     summaries = []
@@ -116,9 +112,7 @@ def transform_to_summary(article: BlogInfo, model_type) -> BlogSummary:
 # save all summeries to DataWarehouse
 def save_blog_summaries(articles, blog_name, model_type):
     # Define path to summary folder in data warehouse and create it if does not exist
-    path_summaries = (
-        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
-    )
+    path_summaries = Path("data/data_warehouse") / blog_name / "summaries"
     path_summaries.mkdir(exist_ok=True, parents=True)
 
     for article in articles:
@@ -136,9 +130,7 @@ def save_blog_summaries(articles, blog_name, model_type):
 
 
 def main(blog_name, model_type):
-    path_summaries = (
-        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
-    )
+    path_summaries = Path("data/data_warehouse") / blog_name / "summaries"
     if path_summaries.exists():
         print("Starting the summarization process...")
         print(f"Summary path exists for blog: {blog_name}")
