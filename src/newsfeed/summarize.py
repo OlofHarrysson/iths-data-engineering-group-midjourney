@@ -168,7 +168,7 @@ def main(blog_name, model_type):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--blog_name", type=str, required=True, choices=["mit", "google_ai", "ai_blog"]
+        "--blog_name", type=str, required=True, choices=["mit", "google_ai", "ai_blog", "open_ai"]
     )
     parser.add_argument("--model_type", type=str, default="api", choices=["api", "local_model"])
 

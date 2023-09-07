@@ -74,17 +74,6 @@ def news_artcle_div(
             ],
             style={"textAlign": "right"},
         ),
-        # dash.html.A(
-        #     f"{link_label}",
-        #     href=link,
-        #     target="_blank",
-        #     style={
-        #         "textDecoration": "none",
-        #         "textAlign": "left",
-        #         "fontFamily": "Roboto",
-        #         "color": "teal",
-        #     },
-        # ),
         dash.html.Br(),
         dash.html.Br(),
         dash.html.Hr(),
