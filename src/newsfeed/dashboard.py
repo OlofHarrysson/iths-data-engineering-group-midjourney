@@ -25,18 +25,23 @@ NEWS_ARTICLES_SUMMARY_SOURCES = {
     "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/summaries",
     "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/summaries",
     "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/summaries",
+    "open_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/open_ai/summaries",
 }
 NEWS_ARTICLES_ARTICLE_SOURCES = {
     "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/articles",
     "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/articles",
     "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/articles",
+    "open_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/open_ai/articles",
 }
 SWEDISH_NEWS_ARTICLES_SUMMARY_SOURCES = {
-    "mit": Path(__file__).parent.parent.parent / f"data_svenska/data_warehouse/mit/sv_summaries",
+    "mit": Path(__file__).parent.parent.parent
+    / f"data/data_svenska/data_warehouse/mit/sv_summaries",
     "google_ai": Path(__file__).parent.parent.parent
-    / f"data_svenska/data_warehouse/google_ai/sv_summaries",
+    / f"data/data_svenska/data_warehouse/google_ai/sv_summaries",
     "ai_blog": Path(__file__).parent.parent.parent
-    / f"data_svenska/data_warehouse/ai_blog/sv_summaries",
+    / f"data/data_svenska/data_warehouse/ai_blog/sv_summaries",
+    "open_ai": Path(__file__).parent.parent.parent
+    / f"data/data_svenska/data_warehouse/open_ai/sv_summaries",
 }
 
 
@@ -62,25 +67,26 @@ def read_json_files_to_df(folder_path):
 # This function returns a blog articles from either a specific source or from all
 # depending on the arguments inputed in the function when the function is called
 def get_news_data(news_blog_source="all_blogs", language="english"):
+    formated_source = {
+        "mit": "MIT",
+        "google_ai": "Google Artificial Intelligence",
+        "ai_blog": "Artificial Intelligence Blog",
+        "open_ai": "OpenAI",
+    }
+    source_dict = {
+        "mit": "mit",
+        "google_ai": "google_ai",
+        "ai_blog": "ai_blog",
+        "open_ai": "open_ai",
+        "all_blogs": ["mit", "google_ai", "ai_blog", "open_ai"],
+    }
     # Check which language user press to determine which data to use
     if language == "english":
-        source_dict = {
-            "mit": "mit",
-            "google_ai": "google_ai",
-            "ai_blog": "ai_blog",
-            "all_blogs": ["mit", "google_ai", "ai_blog"],
-        }
         source_data = NEWS_ARTICLES_SUMMARY_SOURCES
     elif language == "swedish":
-        source_dict = {
-            "mit": "mit",
-            "google_ai": "google_ai",
-            "ai_blog": "ai_blog",
-            "all_blogs": ["mit", "google_ai", "ai_blog"],
-        }
         source_data = SWEDISH_NEWS_ARTICLES_SUMMARY_SOURCES
     else:
-        raise ValueError("Oops! Only english and swedish are supported languages!")
+        raise ValueError("Oops! Only english and swedish are the only supported languages!")
 
     # Rest of the code remains largely the same
     if news_blog_source not in source_dict:
@@ -90,20 +96,17 @@ def get_news_data(news_blog_source="all_blogs", language="english"):
         df_list = []
         for source in source_dict["all_blogs"]:
             temp_df = read_json_files_to_df(source_data[source])
-            temp_df["source"] = source
+            temp_df["source"] = formated_source[source]
             df_list.append(temp_df)
         return pd.concat(df_list, ignore_index=True)
 
     df = read_json_files_to_df(source_data[source_dict[news_blog_source]])
-    df["source"] = source_dict[news_blog_source]
+    df["source"] = formated_source[source_dict[news_blog_source]]
     return df
 
 
 def fetch_and_prepare_articles(language, df):
-    if language == "english":
-        articles_sources = NEWS_ARTICLES_ARTICLE_SOURCES
-    else:
-        articles_sources = NEWS_ARTICLES_ARTICLE_SOURCES
+    articles_sources = NEWS_ARTICLES_ARTICLE_SOURCES
 
     all_articles_df = pd.concat(
         [read_json_files_to_df(articles_sources[key]) for key in articles_sources]
@@ -139,13 +142,12 @@ def fetch_and_prepare_articles(language, df):
                     non_technical_summary=summary_non_technical,
                     link=link,
                     language=language,
-                    article_source=article_source.title(),
+                    article_source=article_source,
                 )
             )
 
         else:
             raise ValueError(f"No matching additional info for Id: {unique_id}")
-
     return news_item_with_date
 
 

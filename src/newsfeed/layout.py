@@ -47,9 +47,10 @@ def create_data_type_dropdown():
                             className="hidden",
                             options=[
                                 {"label": "All Blogs", "value": "all_blogs"},
-                                {"label": "Google-ai", "value": "google_ai"},
+                                {"label": "Google AI", "value": "google_ai"},
                                 {"label": "MIT", "value": "mit"},
-                                {"label": "AI-Blog", "value": "ai_blog"},
+                                {"label": "Artificial Intelligence Blog", "value": "ai_blog"},
+                                {"label": "OpenAI", "value": "open_ai"},
                             ],
                             value="all_blogs",
                             style={"width": "0px", "height": "0px"},
@@ -76,18 +77,6 @@ def create_blog_choice_dropdown():
                                 [
                                     dbc.Row(
                                         [
-                                            # dbc.Col(
-                                            #     dbc.Label(
-                                            #         "Select a Blog",
-                                            #         html_for="dropdown-choice",
-                                            #         style={
-                                            #             "fontSize": "18px",
-                                            #             "fontFamily": "Roboto",
-                                            #             "marginBottom": "10px",
-                                            #         },
-                                            #     ),
-                                            #     width={"size": 3},
-                                            # ),
                                             dbc.Col(
                                                 dcc.Dropdown(
                                                     id="dropdown-choice",
@@ -97,11 +86,15 @@ def create_blog_choice_dropdown():
                                                             "value": "all_blogs",
                                                         },
                                                         {
-                                                            "label": "Google-ai",
+                                                            "label": "Google AI",
                                                             "value": "google_ai",
                                                         },
                                                         {"label": "MIT", "value": "mit"},
-                                                        {"label": "AI-Blog", "value": "ai_blog"},
+                                                        {
+                                                            "label": "Artificial Intelligence Blog",
+                                                            "value": "ai_blog",
+                                                        },
+                                                        {"label": "OpenAI", "value": "open_ai"},
                                                     ],
                                                     value="all_blogs",
                                                     style={"width": "300px", "margintop": "100px"},
@@ -133,11 +126,16 @@ def language_choice():
                             "justifyContent": "space-evenly",
                             "alignItems": "center",
                             "height": "100%",
-                            "padding": "30px",
+                            "padding": "35px",
+                            "backgorundColor": "white",
                         },
                         children=[
-                            html.Button("🇬🇧 English", style={"padding": "5px"}, id="btn-english"),
-                            html.Button("🇸🇪 Swedish", style={"padding": "5px"}, id="btn-swedish"),
+                            html.Button(
+                                "🇬🇧 English",
+                                style={"padding": "8px", "marginRight": "15px"},
+                                id="btn-english",
+                            ),
+                            html.Button("🇸🇪 Swedish", style={"padding": "8px"}, id="btn-swedish"),
                         ],
                     )
                 ],

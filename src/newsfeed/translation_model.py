@@ -31,6 +31,7 @@ def translate_summaries(blog_name):
     # define path to save summaries
     path_swedish_summaries = (
         Path(__file__).parent.parent.parent
+        / "data"
         / "data_svenska/data_warehouse"
         / blog_name
         / "sv_summaries"
@@ -72,7 +73,7 @@ def main(blog_name):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--blog_name", type=str, required=True, choices=["mit", "google_ai", "ai_blog"]
+        "--blog_name", type=str, required=True, choices=["mit", "google_ai", "ai_blog", "open_ai"]
     )
     return parser.parse_args()
 
