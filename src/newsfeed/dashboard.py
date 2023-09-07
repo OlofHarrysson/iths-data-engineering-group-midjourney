@@ -7,7 +7,7 @@ import pandas as pd
 from dash import Input, Output, State
 from dash.dependencies import Input, Output
 
-from layouts.article_item import (
+from newsfeed.article_item import (
     dashboard_content_container,
     news_artcle_div,
     title_heading_for_dashboard,
