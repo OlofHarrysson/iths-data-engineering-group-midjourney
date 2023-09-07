@@ -46,9 +46,9 @@ jobs:
     - name: Run pre-commit on all files
       run: pre-commit run --all-files
 
-    # This step runs the tests using pytest.
+    # This step runs the tests using pytest. Skips "local tests" that can't be run on CI/CD
     - name: Run tests
-      run: pytest
+      run: pytest -m "not local_test" tests/
 
 
 

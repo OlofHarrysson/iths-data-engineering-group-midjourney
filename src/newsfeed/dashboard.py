@@ -7,7 +7,7 @@ import pandas as pd
 from dash import Input, Output, State
 from dash.dependencies import Input, Output
 
-from layouts.article_item import (
+from newsfeed.article_item import (
     dashboard_content_container,
     news_artcle_div,
     title_heading_for_dashboard,
@@ -205,8 +205,10 @@ def display_blogs(choice, language_data, blogs_data):
 
     heading = title_heading_for_dashboard(heading="The Midjourney Journal")
 
-    # Sort the list by date
-    sorted_news_item_with_date = sorted(news_item_with_date, key=lambda x: x["date"], reverse=True)
+    # Sort the list by date so it shows the first 15 articles
+    sorted_news_item_with_date = sorted(news_item_with_date, key=lambda x: x["date"], reverse=True)[
+        :15
+    ]
 
     # Extract the sorted divs
     sorted_news_item = [item["div"] for item in sorted_news_item_with_date]
