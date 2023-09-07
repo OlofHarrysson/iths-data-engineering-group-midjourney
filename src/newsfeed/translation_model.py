@@ -29,13 +29,7 @@ def translate_summaries(blog_name):
         Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
     )
     # define path to save summaries
-    path_swedish_summaries = (
-        Path(__file__).parent.parent.parent
-        / "data"
-        / "data_svenska/data_warehouse"
-        / blog_name
-        / "sv_summaries"
-    )
+    path_swedish_summaries = Path("data/data_svenska/data_warehouse") / blog_name / "sv_summaries"
     path_swedish_summaries.mkdir(exist_ok=True, parents=True)
 
     for filename in os.listdir(path_to_summaries):
