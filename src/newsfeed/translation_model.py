@@ -25,9 +25,8 @@ def translate_summaries(blog_name):
     tokenizer = MarianTokenizer.from_pretrained(model_name)
 
     # Get Path with summaries
-    path_to_summaries = (
-        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
-    )
+    path_to_summaries = Path("data/data_warehouse") / blog_name / "summaries"
+
     # define path to save summaries
     path_swedish_summaries = Path("data/data_svenska/data_warehouse") / blog_name / "sv_summaries"
     path_swedish_summaries.mkdir(exist_ok=True, parents=True)
