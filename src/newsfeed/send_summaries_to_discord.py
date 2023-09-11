@@ -35,7 +35,7 @@ async def get_articles_from_folder(folder_path):
 # The function below formats each summary item that will sent to discord to have
 # the format seen below in message_content
 # tech-, and non-tech summary are truncated seperately instead of truncating the whole discord summary
-def format_summary_message(summary_item, group_name):
+def format_summary_message(summary_item, group_name, language="en"):
     technical_summary = summary_item.get("blog_summary_technical")
     technical_summary = truncate_string(
         technical_summary, max_len=900
@@ -52,12 +52,20 @@ def format_summary_message(summary_item, group_name):
     formatted_non_tech_summary_item = non_technical_summary.replace(".\n", ".\n> ")
     formatted_tech_summary_item = technical_summary.replace(".\n", ".\n> ")
 
-    message_content = (
-        f"🔔 **Article Alert from {group_name}** 🔔\n\n"
-        f"📰 **Blog Title:** \n> {blog_title}\n\n"
-        f"▶️ **Technical Summary:**\n> {formatted_tech_summary_item}\n\n"
-        f"▶️ **Non-Technical Summary:**\n> {formatted_non_tech_summary_item}\n\n"
-    )
+    if language == "sv":
+        message_content = (
+            f"🔔 **Ny artikel från {group_name}** 🔔\n\n"
+            f"📰 **Bloggrubrik:** \n> {blog_title}\n\n"
+            f"▶️ **Teknisk Sammanfattning:**\n> {formatted_tech_summary_item}\n\n"
+            f"▶️ **Icke-Teknisk Sammanfattning:**\n> {formatted_non_tech_summary_item}\n\n"
+        )
+    else:
+        message_content = (
+            f"🔔 **Article Alert from {group_name}** 🔔\n\n"
+            f"📰 **Blog Title:** \n> {blog_title}\n\n"
+            f"▶️ **Technical Summary:**\n> {formatted_tech_summary_item}\n\n"
+            f"▶️ **Non-Technical Summary:**\n> {formatted_non_tech_summary_item}\n\n"
+        )
     return message_content
 
 
@@ -94,12 +102,16 @@ def write_sent_log(sent_log):
 # This async function first uses the aiohttp.ClientSession to create an http session
 # Then a webhook is created with an asynchronous adapter
 # The summaries are loop through then sent to the discord webhook chanel
-async def send_summary_to_discord(blog_name):
+async def send_summary_to_discord(blog_name, language="en"):
     async with aiohttp.ClientSession() as session:
         webhook = Webhook.from_url(webhook_url, adapter=AsyncWebhookAdapter(session))
-        folder_path = (
-            Path(__file__).parent.parent.parent / f"data/data_warehouse/{blog_name}/summaries"
+        base_folder = (
+            "data_svenska/data_warehouse/mit/sv_summaries"
+            if language == "sv"
+            else f"data/data_warehouse/{blog_name}/summaries"
         )
+        folder_path = Path(__file__).parent.parent.parent / base_folder
+
         group_name = "Midjourney"
         summaries = await get_articles_from_folder(folder_path)
         sent_log = read_sent_log()
@@ -109,7 +121,7 @@ async def send_summary_to_discord(blog_name):
 
             # If summary is not in hash, then it goes through this if statement
             if summary_hash not in sent_log:
-                message_content = format_summary_message(summary, group_name)
+                message_content = format_summary_message(summary, group_name, language)
                 await webhook.send(
                     content=message_content
                 )  # Only sends message within this if-statement
@@ -119,13 +131,13 @@ async def send_summary_to_discord(blog_name):
                 await asyncio.sleep(1)
 
 
-def main(blog_name):
-    print(f"Starting to send summaries for {blog_name}...")
+def main(blog_name, language="en"):
+    print(f"Starting to send summaries for {blog_name} in {language}...")
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(send_summary_to_discord(blog_name=blog_name))
-    print(f"Done sending summaries for {blog_name}")
+    loop.run_until_complete(send_summary_to_discord(blog_name=blog_name, language=language))
+    print(f"Done sending summaries for {blog_name} in {language}")
 
 
 if __name__ == "__main__":
     args = utils.parse_args()
-    main(blog_name=args.blog_name)
+    main(blog_name=args.blog_name, language=args.language)
