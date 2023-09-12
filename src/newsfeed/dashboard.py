@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from pathlib import Path
 
 import dash
@@ -13,6 +14,13 @@ from newsfeed.article_item import (
     title_heading_for_dashboard,
 )
 from newsfeed.layout import layout
+from newsfeed.utils import (
+    NEWS_ARTICLES_ARTICLE_SOURCES,
+    NEWS_ARTICLES_SUMMARY_SOURCES,
+    SWEDISH_NEWS_ARTICLES_SUMMARY_SOURCES,
+    formated_source,
+    source_dict,
+)
 
 app = dash.Dash(
     __name__,
@@ -21,28 +29,6 @@ app = dash.Dash(
 app.layout = layout
 
 server = app.server
-NEWS_ARTICLES_SUMMARY_SOURCES = {
-    "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/summaries",
-    "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/summaries",
-    "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/summaries",
-    "open_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/open_ai/summaries",
-}
-NEWS_ARTICLES_ARTICLE_SOURCES = {
-    "mit": Path(__file__).parent.parent.parent / f"data/data_warehouse/mit/articles",
-    "google_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/google_ai/articles",
-    "ai_blog": Path(__file__).parent.parent.parent / f"data/data_warehouse/ai_blog/articles",
-    "open_ai": Path(__file__).parent.parent.parent / f"data/data_warehouse/open_ai/articles",
-}
-SWEDISH_NEWS_ARTICLES_SUMMARY_SOURCES = {
-    "mit": Path(__file__).parent.parent.parent
-    / f"data/data_svenska/data_warehouse/mit/sv_summaries",
-    "google_ai": Path(__file__).parent.parent.parent
-    / f"data/data_svenska/data_warehouse/google_ai/sv_summaries",
-    "ai_blog": Path(__file__).parent.parent.parent
-    / f"data/data_svenska/data_warehouse/ai_blog/sv_summaries",
-    "open_ai": Path(__file__).parent.parent.parent
-    / f"data/data_svenska/data_warehouse/open_ai/sv_summaries",
-}
 
 
 # This function takes reads the json files then returns a df of the said json file. This should
@@ -66,20 +52,7 @@ def read_json_files_to_df(folder_path):
 
 # This function returns a blog articles from either a specific source or from all
 # depending on the arguments inputed in the function when the function is called
-def get_news_data(news_blog_source="all_blogs", language="english"):
-    formated_source = {
-        "mit": "MIT",
-        "google_ai": "Google Artificial Intelligence",
-        "ai_blog": "Artificial Intelligence Blog",
-        "open_ai": "OpenAI",
-    }
-    source_dict = {
-        "mit": "mit",
-        "google_ai": "google_ai",
-        "ai_blog": "ai_blog",
-        "open_ai": "open_ai",
-        "all_blogs": ["mit", "google_ai", "ai_blog", "open_ai"],
-    }
+def get_news_data(news_blog_source="all_blogs", language="english", max_num_articles=15):
     # Check which language user press to determine which data to use
     if language == "english":
         source_data = NEWS_ARTICLES_SUMMARY_SOURCES
@@ -95,12 +68,14 @@ def get_news_data(news_blog_source="all_blogs", language="english"):
     if news_blog_source == "all_blogs":
         df_list = []
         for source in source_dict["all_blogs"]:
-            temp_df = read_json_files_to_df(source_data[source])
+            # limits the total articles to 15 before concatinating into one dataframe
+            temp_df = read_json_files_to_df(source_data[source])[:max_num_articles]
             temp_df["source"] = formated_source[source]
             df_list.append(temp_df)
         return pd.concat(df_list, ignore_index=True)
 
-    df = read_json_files_to_df(source_data[source_dict[news_blog_source]])
+    # If choice is just a single blog, then only 15 id returned
+    df = read_json_files_to_df(source_data[source_dict[news_blog_source]])[:max_num_articles]
     df["source"] = formated_source[source_dict[news_blog_source]]
     return df
 
@@ -185,14 +160,18 @@ def update_language(n_clicks_english, n_clicks_swedish, data):
     [
         Input("dropdown-choice", "value"),
         Input("language-store", "data"),
+        Input("search-btn", "n_clicks"),
     ],
-    [
-        State("blogs-df", "data"),
-    ],
+    [State("blogs-df", "data"), State("search-input", "value")],
 )
-def display_blogs(choice, language_data, blogs_data):
+def display_blogs(choice, language_data, n_clicks, blogs_data, search_query):
     language = language_data.get("language", "english")
-    news_data = get_news_data(choice, language=language)
+    # return max number of articles to return based on search query
+    if search_query:
+        max_articles_to_return = 100
+    else:
+        max_articles_to_return = 15
+    news_data = get_news_data(choice, language=language, max_num_articles=max_articles_to_return)
 
     if (
         "title" not in news_data.columns
@@ -205,10 +184,17 @@ def display_blogs(choice, language_data, blogs_data):
 
     heading = title_heading_for_dashboard(heading="The Midjourney Journal")
 
-    # Sort the list by date so it shows the first 15 articles
-    sorted_news_item_with_date = sorted(news_item_with_date, key=lambda x: x["date"], reverse=True)[
-        :15
-    ]
+    # Sort articles based on date
+    sorted_news_item_with_date = sorted(news_item_with_date, key=lambda x: x["date"], reverse=True)
+
+    if search_query:
+        pattern = re.compile(search_query.replace(" ", "[-_ ]?"), re.IGNORECASE)
+
+        sorted_news_item_with_date = [
+            item
+            for item in sorted_news_item_with_date
+            if pattern.search(str(item["div"].children[0].children))
+        ]
 
     # Extract the sorted divs
     sorted_news_item = [item["div"] for item in sorted_news_item_with_date]
