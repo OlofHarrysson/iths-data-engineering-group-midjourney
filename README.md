@@ -1,3 +1,6 @@
+# Notes for project:
+* add .env in newsfeed with AIP key to get the Airflow pipeline to work
+
 # ITHS Data Engineering course
 A data engineering project where students get to create a blog summarizing pipeline
 
