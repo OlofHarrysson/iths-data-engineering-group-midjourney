@@ -8,3 +8,15 @@ requests
 beautifulsoup4
 lxml
 pydantic==1.10.10
+discord.py==2.3.2
+openai
+tiktoken
+langchain
+dash
+plotly_express
+dash-bootstrap-components
+sentencepiece
+transformers
+sacremoses
+python-dotenv
+torch
