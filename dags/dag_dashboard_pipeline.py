@@ -9,10 +9,7 @@ from newsfeed import (
     translation_model,
 )
 
-blogs_list = [
-    "mit",
-    "ai_blog",
-]  # TODO: add google_ai #TODO: and open_ai if model "api" is to be used
+blogs_list = ["ai_blog"]  # TODO: add google_ai, mit #TODO: and open_ai if model "api" is to be used
 
 
 @task(task_id="download_blogs")

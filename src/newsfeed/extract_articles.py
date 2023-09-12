@@ -68,7 +68,7 @@ def extract_openai_articles(soup):
     return articles
 
 
-def extract_articles_from_xml(parsed_xml, blog_name):
+def extract_articles_from_xml(parsed_xml: BeautifulSoup, blog_name):
     articles = []
     if blog_name == "open_ai":
         soup = parsed_xml

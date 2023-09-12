@@ -34,6 +34,7 @@ def translate_summaries(blog_name):
     for filename in os.listdir(path_to_summaries):
         if filename.endswith(".json"):
             full_path = os.path.join(path_to_summaries, filename)
+            print(full_path)
 
             # Load JSON file
             with open(full_path, "r") as f:
@@ -60,7 +61,7 @@ def translate_summaries(blog_name):
 def main(blog_name):
     print("Initialising translations...")
     translate_summaries(blog_name=blog_name)
-    print("Summarising completed sucessfully!")
+    print("Translation completed sucessfully!")
 
 
 def parse_args():
