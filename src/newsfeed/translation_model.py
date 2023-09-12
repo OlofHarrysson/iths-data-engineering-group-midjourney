@@ -25,9 +25,8 @@ def translate_summaries(blog_name):
     tokenizer = MarianTokenizer.from_pretrained(model_name)
 
     # Get Path with summaries
-    path_to_summaries = (
-        Path(__file__).parent.parent.parent / "data/data_warehouse" / blog_name / "summaries"
-    )
+    path_to_summaries = Path("data/data_warehouse") / blog_name / "summaries"
+
     # define path to save summaries
     path_swedish_summaries = Path("data/data_svenska/data_warehouse") / blog_name / "sv_summaries"
     path_swedish_summaries.mkdir(exist_ok=True, parents=True)
@@ -35,6 +34,7 @@ def translate_summaries(blog_name):
     for filename in os.listdir(path_to_summaries):
         if filename.endswith(".json"):
             full_path = os.path.join(path_to_summaries, filename)
+            print(full_path)
 
             # Load JSON file
             with open(full_path, "r") as f:
@@ -61,7 +61,7 @@ def translate_summaries(blog_name):
 def main(blog_name):
     print("Initialising translations...")
     translate_summaries(blog_name=blog_name)
-    print("Summarising completed sucessfully!")
+    print("Translation completed sucessfully!")
 
 
 def parse_args():
